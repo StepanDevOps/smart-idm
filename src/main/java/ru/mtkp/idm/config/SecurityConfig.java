@@ -4,27 +4,43 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import ru.mtkp.idm.model.IdmUser;
+import ru.mtkp.idm.repository.IdmUserRepository;
+
 /**
- * Конфигурация Spring Security для разработки.
- * Настроен простой in-memory пользователь (admin/admin) для локального тестирования.
+ * Конфигурация Spring Security для Smart IDM.
+ * Аутентификация выполняется по локальным пользователям IDM из базы данных.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final IdmUserRepository idmUserRepository;
+
+    /**
+     * Создает конфигурацию безопасности.
+     *
+     * @param idmUserRepository репозиторий локальных пользователей IDM
+     */
+    public SecurityConfig(IdmUserRepository idmUserRepository) {
+        this.idmUserRepository = idmUserRepository;
+    }
 
     /**
      * Настройка HTTP безопасности: разрешаем публичный доступ к статическим ресурсам и странице логина,
      * все остальные запросы требуют аутентификации. Настроен form login с кастомной страницей /login.
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(org.springframework.security.config.Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/login",
@@ -50,16 +66,35 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * In-memory UserDetailsService с одним пользователем admin (пароль в формате {noop} для упрощения).
-     */
     @Bean
     public UserDetailsService users() {
-        var user = User.withUsername("admin")
-                .password("{noop}admin")
-                .roles("ADMIN")
+        return username -> idmUserRepository.findByUsername(username)
+                .map(this::toUserDetails)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+    }
+
+    /**
+     * Криптографический энкодер паролей для локальных пользователей IDM.
+     *
+     * @return BCryptPasswordEncoder
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Преобразует доменную сущность локального пользователя в Spring Security UserDetails.
+     *
+     * @param idmUser локальный пользователь IDM
+     * @return объект для Spring Security
+     */
+    private UserDetails toUserDetails(IdmUser idmUser) {
+        return org.springframework.security.core.userdetails.User.withUsername(idmUser.getUsername())
+                .password(idmUser.getPasswordHash())
+                .roles(idmUser.getRole().name())
+                .disabled(!idmUser.isEnabled())
                 .build();
-        return new InMemoryUserDetailsManager(user);
     }
 }
 
