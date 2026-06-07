@@ -128,6 +128,54 @@ body.app-body{
   border-color: var(--border);
 }
 
+[data-theme="dark"] .btn-success,
+.dark-theme .btn-success{
+  background: #059669;
+  border-color: #059669;
+}
+
+[data-theme="dark"] .btn-danger,
+.dark-theme .btn-danger{
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+[data-theme="dark"] .btn-outline-warning,
+.dark-theme .btn-outline-warning{
+  color: #fbbf24;
+  border-color: #fbbf24;
+}
+
+[data-theme="dark"] .btn-outline-warning:hover,
+.dark-theme .btn-outline-warning:hover{
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border-color: #fbbf24;
+}
+
+[data-theme="dark"] .btn-outline-danger,
+.dark-theme .btn-outline-danger{
+  color: #f87171;
+  border-color: #f87171;
+}
+
+[data-theme="dark"] .btn-outline-danger:hover,
+.dark-theme .btn-outline-danger:hover{
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
+  border-color: #f87171;
+}
+
+[data-theme="dark"] .badge.bg-success,
+.dark-theme .badge.bg-success{
+  background: #059669 !important;
+}
+
+[data-theme="dark"] .badge.bg-secondary,
+.dark-theme .badge.bg-secondary{
+  background: #4b5563 !important;
+}
+
 .dropdown-menu{
   background: var(--surface);
   border-color: var(--border);
@@ -155,6 +203,51 @@ body.app-body{
 .table thead th,
 .table tbody td{
   border-color: var(--border);
+}
+
+[data-theme="dark"] .table thead th,
+.dark-theme .table thead th{
+  background-color: var(--surface-2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .table tbody td,
+.dark-theme .table tbody td{
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .table,
+.dark-theme .table,
+[data-theme="dark"] .table *,
+.dark-theme .table *{
+  --bs-table-bg: var(--surface) !important;
+  --bs-table-color: var(--text) !important;
+  --bs-table-border-color: var(--border) !important;
+  --bs-table-striped-bg: var(--surface-2) !important;
+  --bs-table-striped-color: var(--text) !important;
+  --bs-table-active-bg: var(--surface-2) !important;
+  --bs-table-active-color: var(--text) !important;
+  --bs-table-hover-bg: var(--surface-2) !important;
+  --bs-table-hover-color: var(--text) !important;
+}
+
+[data-theme="dark"] .card .table,
+.dark-theme .card .table{
+  background-color: var(--surface) !important;
+}
+
+.table-hover > tbody > tr:hover > *{
+  --bs-table-accent-bg: var(--surface-2);
+  color: var(--text);
+}
+
+[data-theme="dark"] .table-hover > tbody > tr:hover > *,
+.dark-theme .table-hover > tbody > tr:hover > *{
+  --bs-table-accent-bg: var(--surface-2);
+  color: var(--text);
 }
 
 .form-control,
