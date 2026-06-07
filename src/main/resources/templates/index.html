@@ -2,7 +2,7 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>smart-idm</title>
+    <title th:text="#{app.pageTitle}">smart-idm</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 2rem; }
         table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
@@ -14,36 +14,36 @@
     </style>
 </head>
 <body>
-<h1>smart-idm</h1>
-<p>МVP IDM-системы для обработки Joiner, Mover, Leaver и Access Request.</p>
+<h1 th:text="#{app.name}">smart-idm</h1>
+<p th:text="#{app.description}">MVP IDM system for Joiner, Mover, Leaver and Access Request processing.</p>
 
-<h2>Симуляция события</h2>
+<h2 th:text="#{section.eventSimulation}">Event Simulation</h2>
 <form th:action="@{/events/simulate}" method="post">
-    <label for="eventType">Тип события</label>
+    <label for="eventType" th:text="#{form.label.eventType}">Event Type</label>
     <select id="eventType" name="eventType">
-        <option value="HR_EVENT">HR_EVENT</option>
-        <option value="ACCESS_REQUEST">ACCESS_REQUEST</option>
+        <option value="HR_EVENT" th:text="#{event.type.hr}">HR_EVENT</option>
+        <option value="ACCESS_REQUEST" th:text="#{event.type.accessRequest}">ACCESS_REQUEST</option>
     </select>
 
-    <label for="userId">ID пользователя</label>
+    <label for="userId" th:text="#{form.label.userId}">User ID</label>
     <input id="userId" name="userId" type="number" min="1" required>
 
-    <label for="details">Детали</label>
+    <label for="details" th:text="#{form.label.details}">Details</label>
     <input id="details" name="details" type="text" required>
 
-    <button type="submit">Создать симуляцию</button>
+    <button type="submit" th:text="#{button.simulateEvent}">Create simulation</button>
 </form>
 
-<h2>Заявки</h2>
+<h2 th:text="#{section.requests}">Requests</h2>
 <table>
     <thead>
     <tr>
-        <th>ID</th>
-        <th>Пользователь</th>
-        <th>Система</th>
-        <th>Роль</th>
-        <th>Статус</th>
-        <th>Создано</th>
+        <th th:text="#{table.column.id}">ID</th>
+        <th th:text="#{table.column.user}">User</th>
+        <th th:text="#{table.column.system}">System</th>
+        <th th:text="#{table.column.role}">Role</th>
+        <th th:text="#{table.column.status}">Status</th>
+        <th th:text="#{table.column.created}">Created</th>
     </tr>
     </thead>
     <tbody>
@@ -56,7 +56,7 @@
         <td th:text="${request.createdAt}"></td>
     </tr>
     <tr th:if="${#lists.isEmpty(requests)}">
-        <td colspan="6">Заявок пока нет</td>
+        <td colspan="6" th:text="#{table.empty.requests}">No requests yet</td>
     </tr>
     </tbody>
 </table>

@@ -1,29 +1,46 @@
 /* Общие переменные и минималистичный стиль для Smart IDM */
 :root{
-  --bg: #f9fafb; /* фон */
-  --card: #ffffff; /* фон карточек */
-  --border: #e5e7eb; /* тонкая граница */
-  --text: #1f2937; /* глубокий уголь */
-  --muted: #6b7280; /* приглушённый серый */
-  --primary: #4f46e5; /* профессиональный индиго */
+  --bg: #f9fafb;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --primary: #4f46e5;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --nav-text: #374151;
+  --nav-active-bg: rgba(79,70,229,0.10);
+  --nav-active-text: #4f46e5;
   --radius: 6px;
 }
 
-html,body{
+html,
+body,
+.app-shell{
   height:100%;
   background:var(--bg);
   color:var(--text);
   font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
+body.app-body{
+  min-height: 100%;
+}
+
 /* Dark theme variables */
-.dark-theme{
-  --bg: #0f1724; /* темный фон */
-  --card: #0b1220; /* фон карточек в тёмной теме */
-  --border: #1f2937;
-  --text: #e6edf3;
-  --muted: #94a3b8;
-  --primary: #6366f1;
+.dark-theme,
+[data-theme="dark"]{
+  --bg: #0b1220;
+  --card: #111827;
+  --border: #243244;
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --primary: #818cf8;
+  --surface: #111827;
+  --surface-2: #172033;
+  --nav-text: #e5e7eb;
+  --nav-active-bg: rgba(129,140,248,0.18);
+  --nav-active-text: #eef2ff;
 }
 
 .sidebar{
@@ -37,21 +54,54 @@ html,body{
   background: var(--card);
 }
 
+.sidebar-brand,
+.app-navbar,
+.app-text{
+  color: var(--text) !important;
+}
+
+.app-navbar,
+.sidebar{
+  background: var(--surface);
+}
+
+.app-navbar{
+  border-bottom: 1px solid var(--border);
+}
+
 .sidebar.collapsed{
   transform: translateX(-260px);
 }
 
 .sidebar .nav-link{
-  color: var(--muted);
+  color: var(--nav-text);
   border-radius: var(--radius);
   padding: 10px 12px;
   margin: 2px 0;
 }
 
+.sidebar .nav-link:hover{
+  background: var(--surface-2);
+  color: var(--text);
+}
+
 .sidebar .nav-link.active{
-  background: rgba(79,70,229,0.08);
-  color: var(--primary) !important;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text) !important;
   font-weight: 600;
+}
+
+.sidebar hr,
+.app-navbar,
+.sidebar,
+.card{
+  border-color: var(--border) !important;
+}
+
+.sidebar .text-muted,
+.small-muted,
+.text-muted{
+  color: var(--muted) !important;
 }
 
 .card{
@@ -64,6 +114,120 @@ html,body{
 .btn-primary{
   background: var(--primary);
   border-color: var(--primary);
+}
+
+.btn-outline-secondary{
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus{
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.dropdown-menu{
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.dropdown-item{
+  color: var(--text);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus{
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.table{
+  color: var(--text);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > *{
+  --bs-table-accent-bg: var(--surface-2);
+  color: var(--text);
+}
+
+.table thead th,
+.table tbody td{
+  border-color: var(--border);
+}
+
+.form-control,
+.form-select{
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.form-control:focus,
+.form-select:focus{
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 .2rem rgba(129,140,248,.20);
+}
+
+[data-theme="dark"] .text-dark,
+.dark-theme .text-dark{
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .display-6,
+[data-theme="dark"] .fw-semibold,
+[data-theme="dark"] .small,
+[data-theme="dark"] .fs-5,
+[data-theme="dark"] .card,
+[data-theme="dark"] .card *,
+.dark-theme .display-6,
+.dark-theme .fw-semibold,
+.dark-theme .small,
+.dark-theme .fs-5,
+.dark-theme .card,
+.dark-theme .card *{
+  color: var(--text);
+}
+
+[data-theme="dark"] .bg-white,
+.dark-theme .bg-white{
+  background: var(--surface) !important;
+}
+
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .small-muted,
+[data-theme="dark"] .sidebar .nav-link,
+[data-theme="dark"] .dropdown-item,
+.dark-theme .text-muted,
+.dark-theme .small-muted,
+.dark-theme .sidebar .nav-link,
+.dark-theme .dropdown-item{
+  color: var(--muted) !important;
+}
+
+[data-theme="dark"] .sidebar .nav-link.active,
+.dark-theme .sidebar .nav-link.active{
+  color: var(--nav-active-text) !important;
+}
+
+[data-theme="dark"] .border-bottom,
+[data-theme="dark"] .border-end,
+.dark-theme .border-bottom,
+.dark-theme .border-end{
+  border-color: var(--border) !important;
+}
+
+.list-group-item,
+.modal-content,
+.offcanvas,
+.popover,
+.toast,
+.navbar{
+  background: var(--surface);
+  color: var(--text);
 }
 
 .mono{

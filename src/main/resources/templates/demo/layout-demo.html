@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{components/layout :: head('Dashboard — Smart IDM')}"></head>
+<head th:replace="~{components/layout :: head(#{page.defaultTitle} + ' — ' + #{app.title})}"></head>
 <body>
 <div class="d-flex vh-100">
     <aside th:replace="~{components/layout :: sidebar('dashboard')}"></aside>
@@ -15,7 +15,7 @@
                         <div class="d-flex align-items-center">
                             <div class="me-3 display-6 text-primary">1,234</div>
                             <div>
-                                <div class="text-muted small">Total Users</div>
+                                <div class="text-muted small" th:text="#{metric.totalUsers}">Total Users</div>
                                 <div class="fw-semibold">1234</div>
                             </div>
                         </div>
@@ -26,7 +26,7 @@
                         <div class="d-flex align-items-center">
                             <div class="me-3 display-6 text-warning">12</div>
                             <div>
-                                <div class="text-muted small">Active Requests</div>
+                                                <div class="text-muted small" th:text="#{metric.activeRequests}">Active Requests</div>
                                 <div class="fw-semibold">12</div>
                             </div>
                         </div>
@@ -37,7 +37,7 @@
                         <div class="d-flex align-items-center">
                             <div class="me-3 display-6 text-danger">3</div>
                             <div>
-                                <div class="text-muted small">Critical Logs</div>
+                                <div class="text-muted small" th:text="#{metric.criticalLogs}">Critical Logs</div>
                                 <div class="fw-semibold">3</div>
                             </div>
                         </div>
@@ -48,19 +48,19 @@
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="card p-3">
-                        <h6 class="mb-3">Recent Events</h6>
+                        <h6 class="mb-3" th:text="#{recent.events}">Recent Events</h6>
                         <ul class="list-unstyled">
                             <li class="py-2 border-bottom">
                                 <div class="small text-muted">10:12 — USER_CREATE</div>
-                                <div>Пользователь <strong>ivanov</strong> создан в системе</div>
+                                <div th:utext="#{recent.event.userCreated('ivanov')}">User <strong>ivanov</strong> created in the system</div>
                             </li>
                             <li class="py-2 border-bottom">
                                 <div class="small text-muted">09:48 — REQUEST_APPROVED</div>
-                                <div>Заявка #452 одобрена менеджером</div>
+                                <div th:utext="#{recent.event.requestApproved('#452')}">Request #452 approved by manager</div>
                             </li>
                             <li class="py-2">
                                 <div class="small text-muted">08:30 — ACCOUNT_PROVISIONED</div>
-                                <div>Аккаунт <span class="mono">ivanov@ldap</span> успешно provisioned</div>
+                                <div th:utext="#{recent.event.accountProvisioned('<span class=\'mono\'>ivanov@ldap</span>')}">Account <span class="mono">ivanov@ldap</span> provisioned successfully</div>
                             </li>
                         </ul>
                     </div>

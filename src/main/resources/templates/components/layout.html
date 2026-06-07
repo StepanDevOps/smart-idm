@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" data-theme="light" class="app-shell">
 <head th:fragment="head(title)">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -16,43 +16,43 @@
     <!-- App styles -->
     <link rel="stylesheet" th:href="@{/css/app.css}" />
 </head>
-<body>
+<body class="app-body">
 <!-- Sidebar fragment: принимает параметр active (ключ текущей секции) -->
 <div th:fragment="sidebar(active)">
-    <nav class="sidebar d-flex flex-column p-3 bg-white border-end">
-        <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-            <span class="fs-5 fw-semibold">Smart IDM</span>
+    <nav class="sidebar d-flex flex-column p-3">
+        <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none sidebar-brand">
+            <span class="fs-5 fw-semibold" th:text="#{app.title}">Smart IDM</span>
         </a>
         <hr />
         <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item">
                 <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-speedometer2 me-2"></i>
-                    Dashboard
+                    <span th:text="#{nav.dashboard}">Dashboard</span>
                 </a>
             </li>
             <li>
-                <a th:href="@{/users}" th:classappend="${active == 'users'} ? ' active' : ''" class="nav-link text-dark">
+                <a th:href="@{/users}" th:classappend="${active == 'users'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-people me-2"></i>
-                    Users
+                    <span th:text="#{nav.users}">Users</span>
                 </a>
             </li>
             <li>
-                <a th:href="@{/requests}" th:classappend="${active == 'requests'} ? ' active' : ''" class="nav-link text-dark">
+                <a th:href="@{/requests}" th:classappend="${active == 'requests'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-card-checklist me-2"></i>
-                    Requests
+                    <span th:text="#{nav.requests}">Requests</span>
                 </a>
             </li>
             <li>
-                <a th:href="@{/audit}" th:classappend="${active == 'audit'} ? ' active' : ''" class="nav-link text-dark">
+                <a th:href="@{/audit}" th:classappend="${active == 'audit'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-journal-text me-2"></i>
-                    Audit Logs
+                    <span th:text="#{nav.audit}">Audit Logs</span>
                 </a>
             </li>
             <li>
-                <a th:href="@{/profile}" th:classappend="${active == 'profile'} ? ' active' : ''" class="nav-link text-dark">
+                <a th:href="@{/profile}" th:classappend="${active == 'profile'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-person-circle me-2"></i>
-                    Profile
+                    <span th:text="#{nav.profile}">Profile</span>
                 </a>
             </li>
         </ul>
@@ -65,7 +65,7 @@
 
 <!-- Header fragment: показывает текущего пользователя и кнопку выхода -->
 <header th:fragment="header">
-    <nav class="navbar navbar-expand bg-white border-bottom">
+    <nav class="navbar navbar-expand app-navbar">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
                 <button class="btn btn-sm btn-outline-secondary me-2 d-md-none" id="toggleSidebar"><i class="bi bi-list"></i></button>
@@ -73,12 +73,31 @@
             </div>
             <div class="d-flex align-items-center">
                 <div class="me-3 text-end d-none d-md-block">
-                    <div class="fw-semibold text-dark" th:text="${currentUserFullName}">Администратор</div>
+                    <div class="fw-semibold app-text" th:text="${currentUserFullName}">Администратор</div>
                     <div class="text-muted small" th:text="${currentUserLogin}">admin</div>
                 </div>
+
+                <!-- Селектор языка -->
+                <div class="me-2">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                            <li><a class="dropdown-item" href="?lang=en" th:text="#{lang.english}">English</a></li>
+                            <li><a class="dropdown-item" href="?lang=ru" th:text="#{lang.russian}">Русский</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Переключатель темы -->
+                <div class="me-2">
+                    <button class="btn btn-sm btn-outline-secondary" id="themeToggle" th:title="#{button.toggleTheme}"><i class="bi bi-circle-half"></i></button>
+                </div>
+
                 <form th:action="@{/logout}" method="post">
                     <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                        <i class="bi bi-box-arrow-right me-1"></i> <span th:text="#{button.signout}">Sign Out</span>
                     </button>
                 </form>
             </div>
@@ -98,7 +117,44 @@
                     document.querySelector('.sidebar').classList.toggle('collapsed');
                 });
             }
+
+            // Применяем сохранённую тему из cookie к корневому контейнеру, чтобы наследовали все блоки
+            applyTheme(getCookie('smart-idm-theme') || 'light', false);
         });
+
+        function applyTheme(theme, persist) {
+            var root = document.documentElement;
+            var body = document.body;
+            var isDark = theme === 'dark';
+            root.classList.toggle('dark-theme', isDark);
+            root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            body.classList.toggle('dark-theme', isDark);
+            if (persist !== false) {
+                setCookie('smart-idm-theme', isDark ? 'dark' : 'light', 365);
+            }
+        }
+
+        // Переключатель темы
+        document.addEventListener('click', function(e){
+            if (e.target && (e.target.id === 'themeToggle' || e.target.closest('#themeToggle'))){
+                var isDarkNow = !document.documentElement.classList.contains('dark-theme');
+                applyTheme(isDarkNow ? 'dark' : 'light', true);
+            }
+        });
+
+        function setCookie(name, value, days) {
+            var maxAge = days * 24 * 60 * 60;
+            document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + maxAge + '; samesite=lax';
+        }
+
+        function getCookie(name) {
+            var value = '; ' + document.cookie;
+            var parts = value.split('; ' + name + '=');
+            if (parts.length === 2) {
+                return decodeURIComponent(parts.pop().split(';').shift());
+            }
+            return null;
+        }
     </script>
 </div>
 
