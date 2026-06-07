@@ -21,7 +21,7 @@ public class IdentityServiceImpl implements IdentityService {
 	 */
 	@Override
 	public void processJoiner(User user, String details) {
-		log.info("Обработка Joiner выполнена для пользователя {}", user.getUsername());
+		log.info("Обработка Joiner выполнена для пользователя {}", user.getLogin());
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class IdentityServiceImpl implements IdentityService {
 	 */
 	@Override
 	public void processMover(User user, String details) {
-		log.info("Обработка Mover выполнена для пользователя {}", user.getUsername());
+		log.info("Обработка Mover выполнена для пользователя {}", user.getLogin());
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class IdentityServiceImpl implements IdentityService {
 	 */
 	@Override
 	public void processLeaver(User user, String details) {
-		log.info("Обработка Leaver выполнена для пользователя {}", user.getUsername());
+		log.info("Обработка Leaver выполнена для пользователя {}", user.getLogin());
 	}
 }
 

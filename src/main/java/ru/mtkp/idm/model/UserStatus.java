@@ -6,6 +6,7 @@ package ru.mtkp.idm.model;
 public enum UserStatus {
 
 	ACTIVE,
+	TERMINATED,
 	SUSPENDED
 }
 

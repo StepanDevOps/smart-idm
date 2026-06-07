@@ -14,11 +14,11 @@ import ru.mtkp.idm.model.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	/**
-	 * Находит пользователя по имени учетной записи.
+	 * Находит пользователя по логину (поле `login`).
 	 *
-	 * @param username имя учетной записи
+	 * @param login логин
 	 * @return найденный пользователь
 	 */
-	Optional<User> findByUsername(String username);
+	Optional<User> findByLogin(String login);
 }
 

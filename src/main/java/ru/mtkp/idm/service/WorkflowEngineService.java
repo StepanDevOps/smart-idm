@@ -66,25 +66,24 @@ public class WorkflowEngineService {
 	}
 
 	private void handleHrEvent(User user, String details, IdmRequest request) {
-		request.setStatus(RequestStatus.IN_PROGRESS);
-		idmRequestRepository.save(request);
+		// Оставляем статус CREATED до завершения обработки, подробные статусы не определены в SQL
 
 		if (isJoiner(details)) {
-			log.info("Запущена обработка Joiner для пользователя {}", user.getUsername());
+			log.info("Запущена обработка Joiner для пользователя {}", user.getLogin());
 			identityService.processJoiner(user, details);
 			provisioningService.createAccount(user, request.getTargetSystem(), request.getRoleName());
 			return;
 		}
 
 		if (isMover(details)) {
-			log.info("Запущена обработка Mover для пользователя {}", user.getUsername());
+			log.info("Запущена обработка Mover для пользователя {}", user.getLogin());
 			identityService.processMover(user, details);
 			provisioningService.createAccount(user, request.getTargetSystem(), request.getRoleName());
 			return;
 		}
 
 		if (isLeaver(details)) {
-			log.info("Запущена обработка Leaver для пользователя {}", user.getUsername());
+			log.info("Запущена обработка Leaver для пользователя {}", user.getLogin());
 			identityService.processLeaver(user, details);
 			provisioningService.blockAccount(user, request.getTargetSystem());
 			return;
@@ -94,10 +93,8 @@ public class WorkflowEngineService {
 	}
 
 	private void handleAccessRequest(User user, String details, IdmRequest request) {
-		request.setStatus(RequestStatus.IN_PROGRESS);
-		idmRequestRepository.save(request);
-
-		log.info("Запущена обработка Access Request для пользователя {}", user.getUsername());
+		// Оставляем статус CREATED до завершения
+		log.info("Запущена обработка Access Request для пользователя {}", user.getLogin());
 		provisioningService.createAccount(user, request.getTargetSystem(), request.getRoleName());
 	}
 

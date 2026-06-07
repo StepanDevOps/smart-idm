@@ -1,64 +1,109 @@
 package ru.mtkp.idm.model;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * Сущность пользователя IDM.
+ * Сущность пользователя (таблица users).
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "idm_users")
+@Table(name = "users")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
 
-	/**
-	 * Идентификатор пользователя.
-	 */
+	/** Идентификатор */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@EqualsAndHashCode.Include
 	private Long id;
 
-	/**
-	 * Уникальное имя учетной записи.
-	 */
-	@Column(nullable = false, unique = true, length = 100)
-	private String username;
+	/** Логин (уникальный) */
+	@Column(name = "login", nullable = false, unique = true, length = 50)
+	private String login;
 
-	/**
-	 * Полное имя сотрудника.
-	 */
-	@Column(nullable = false, length = 255)
-	private String fullName;
+	/** Имя */
+	@Column(name = "first_name", nullable = false, length = 100)
+	private String firstName;
 
-	/**
-	 * Подразделение сотрудника.
-	 */
-	@Column(length = 255)
-	private String department;
+	/** Фамилия */
+	@Column(name = "last_name", nullable = false, length = 100)
+	private String lastName;
 
-	/**
-	 * Текущий статус пользователя.
-	 */
+	/** Отчество */
+	@Column(name = "middle_name", length = 100)
+	private String middleName;
+
+	/** Рабочая почта (уникальная) */
+	@Column(name = "email_work", nullable = false, unique = true, length = 255)
+	private String emailWork;
+
+	/** Дата приема */
+	@Column(name = "hire_date", nullable = false)
+	private LocalDate hireDate;
+
+	/** Дата увольнения */
+	@Column(name = "termination_date")
+	private LocalDate terminationDate;
+
+	/** Статус пользователя */
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 32)
-	@Default
+	@Column(name = "status", nullable = false, length = 32)
 	private UserStatus status = UserStatus.ACTIVE;
+
+	/** Дата создания записи */
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
+
+	/** Кто создал запись (ссылка на users.id) */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "created_by")
+	private User createdBy;
+
+	/** Подразделение */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "department_id")
+	private Department department;
+
+	@PrePersist
+	public void prePersist() {
+		if (createdAt == null) {
+			createdAt = LocalDateTime.now();
+		}
+		validateDates();
+	}
+
+	@PreUpdate
+	public void preUpdate() {
+		validateDates();
+	}
+
+	private void validateDates() {
+		if (terminationDate != null && hireDate != null && !terminationDate.isAfter(hireDate)) {
+			throw new IllegalStateException("termination_date must be null or after hire_date");
+		}
+	}
 }
 

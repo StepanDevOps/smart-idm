@@ -22,7 +22,7 @@ public class ProvisioningServiceImpl implements ProvisioningService {
 	 */
 	@Override
 	public void createAccount(User user, String targetSystem, String roleName) {
-		log.info("Создание учетной записи для {} в системе {} с ролью {}", user.getUsername(), targetSystem, roleName);
+		log.info("Создание учетной записи для {} в системе {} с ролью {}", user.getLogin(), targetSystem, roleName);
 	}
 
 	/**
@@ -33,7 +33,7 @@ public class ProvisioningServiceImpl implements ProvisioningService {
 	 */
 	@Override
 	public void blockAccount(User user, String targetSystem) {
-		log.info("Блокировка учетной записи для {} в системе {}", user.getUsername(), targetSystem);
+		log.info("Блокировка учетной записи для {} в системе {}", user.getLogin(), targetSystem);
 	}
 }
 
