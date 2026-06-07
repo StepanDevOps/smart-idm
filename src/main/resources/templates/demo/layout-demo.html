@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Dashboard — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('dashboard')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <div class="card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 display-6 text-primary">1,234</div>
+                            <div>
+                                <div class="text-muted small">Total Users</div>
+                                <div class="fw-semibold">1234</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 display-6 text-warning">12</div>
+                            <div>
+                                <div class="text-muted small">Active Requests</div>
+                                <div class="fw-semibold">12</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 display-6 text-danger">3</div>
+                            <div>
+                                <div class="text-muted small">Critical Logs</div>
+                                <div class="fw-semibold">3</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card p-3">
+                        <h6 class="mb-3">Recent Events</h6>
+                        <ul class="list-unstyled">
+                            <li class="py-2 border-bottom">
+                                <div class="small text-muted">10:12 — USER_CREATE</div>
+                                <div>Пользователь <strong>ivanov</strong> создан в системе</div>
+                            </li>
+                            <li class="py-2 border-bottom">
+                                <div class="small text-muted">09:48 — REQUEST_APPROVED</div>
+                                <div>Заявка #452 одобрена менеджером</div>
+                            </li>
+                            <li class="py-2">
+                                <div class="small text-muted">08:30 — ACCOUNT_PROVISIONED</div>
+                                <div>Аккаунт <span class="mono">ivanov@ldap</span> успешно provisioned</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>

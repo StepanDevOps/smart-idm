@@ -1,0 +1,83 @@
+/* Общие переменные и минималистичный стиль для Smart IDM */
+:root{
+  --bg: #f9fafb; /* фон */
+  --card: #ffffff; /* фон карточек */
+  --border: #e5e7eb; /* тонкая граница */
+  --text: #1f2937; /* глубокий уголь */
+  --muted: #6b7280; /* приглушённый серый */
+  --primary: #4f46e5; /* профессиональный индиго */
+  --radius: 6px;
+}
+
+html,body{
+  height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Dark theme variables */
+.dark-theme{
+  --bg: #0f1724; /* темный фон */
+  --card: #0b1220; /* фон карточек в тёмной теме */
+  --border: #1f2937;
+  --text: #e6edf3;
+  --muted: #94a3b8;
+  --primary: #6366f1;
+}
+
+.sidebar{
+  width: 250px;
+  min-width: 200px;
+  max-width: 260px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  border-right: 1px solid var(--border);
+  background: var(--card);
+}
+
+.sidebar.collapsed{
+  transform: translateX(-260px);
+}
+
+.sidebar .nav-link{
+  color: var(--muted);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin: 2px 0;
+}
+
+.sidebar .nav-link.active{
+  background: rgba(79,70,229,0.08);
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+.card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.btn-primary{
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.mono{
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
+  font-size: .95em;
+}
+
+.small-muted{
+  color: var(--muted);
+}
+
+/* Простая адаптивность */
+@media (max-width: 768px){
+  .sidebar{ position: absolute; z-index: 1050; }
+  .sidebar.collapsed{ transform: translateX(-260px); }
+}
+
