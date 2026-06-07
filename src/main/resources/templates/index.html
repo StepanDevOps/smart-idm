@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>smart-idm</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+        form { margin-top: 1rem; padding: 1rem; border: 1px solid #ddd; }
+        label { display: block; margin-top: 0.5rem; }
+        input, select { width: 100%; padding: 0.4rem; box-sizing: border-box; }
+        button { margin-top: 1rem; padding: 0.6rem 1rem; }
+    </style>
+</head>
+<body>
+<h1>smart-idm</h1>
+<p>МVP IDM-системы для обработки Joiner, Mover, Leaver и Access Request.</p>
+
+<h2>Симуляция события</h2>
+<form th:action="@{/events/simulate}" method="post">
+    <label for="eventType">Тип события</label>
+    <select id="eventType" name="eventType">
+        <option value="HR_EVENT">HR_EVENT</option>
+        <option value="ACCESS_REQUEST">ACCESS_REQUEST</option>
+    </select>
+
+    <label for="userId">ID пользователя</label>
+    <input id="userId" name="userId" type="number" min="1" required>
+
+    <label for="details">Детали</label>
+    <input id="details" name="details" type="text" required>
+
+    <button type="submit">Создать симуляцию</button>
+</form>
+
+<h2>Заявки</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Пользователь</th>
+        <th>Система</th>
+        <th>Роль</th>
+        <th>Статус</th>
+        <th>Создано</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="request : ${requests}">
+        <td th:text="${request.id}"></td>
+        <td th:text="${request.user != null ? request.user.username : '—'}"></td>
+        <td th:text="${request.targetSystem}"></td>
+        <td th:text="${request.roleName}"></td>
+        <td th:text="${request.status}"></td>
+        <td th:text="${request.createdAt}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(requests)}">
+        <td colspan="6">Заявок пока нет</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
+
