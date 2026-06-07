@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ru.mtkp.idm.repository.IdmRequestRepository;
+import ru.mtkp.idm.repository.RequestRepository;
 import ru.mtkp.idm.service.WorkflowEngineService;
 
 /**
@@ -17,7 +17,7 @@ import ru.mtkp.idm.service.WorkflowEngineService;
 @RequiredArgsConstructor
 public class IdmWebController {
 
-	private final IdmRequestRepository idmRequestRepository;
+	private final RequestRepository requestRepository;
 	private final WorkflowEngineService workflowEngineService;
 
 	/**
@@ -28,7 +28,7 @@ public class IdmWebController {
 	 */
 	@GetMapping("/")
 	public String index(Model model) {
-		model.addAttribute("requests", idmRequestRepository.findAll());
+		model.addAttribute("requests", requestRepository.findAll());
 		return "index";
 	}
 

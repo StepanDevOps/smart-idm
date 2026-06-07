@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import ru.mtkp.idm.repository.UserRepository;
-import ru.mtkp.idm.repository.IdmRequestRepository;
+import ru.mtkp.idm.repository.RequestRepository;
 
 /**
  * Контроллер для административных страниц: Users, Requests, Audit, Profile.
@@ -14,11 +14,11 @@ import ru.mtkp.idm.repository.IdmRequestRepository;
 public class AdminController {
 
     private final UserRepository userRepository;
-    private final IdmRequestRepository idmRequestRepository;
+    private final RequestRepository requestRepository;
 
-    public AdminController(UserRepository userRepository, IdmRequestRepository idmRequestRepository) {
+    public AdminController(UserRepository userRepository, RequestRepository requestRepository) {
         this.userRepository = userRepository;
-        this.idmRequestRepository = idmRequestRepository;
+        this.requestRepository = requestRepository;
     }
 
     /**
@@ -36,7 +36,7 @@ public class AdminController {
      */
     @GetMapping("/requests")
     public String requests(Model model) {
-        model.addAttribute("requests", idmRequestRepository.findAll());
+        model.addAttribute("requests", requestRepository.findAll());
         model.addAttribute("active", "requests");
         return "requests";
     }
@@ -46,7 +46,7 @@ public class AdminController {
      */
     @GetMapping("/audit")
     public String audit(Model model) {
-        model.addAttribute("events", idmRequestRepository.findAll());
+        model.addAttribute("events", requestRepository.findAll());
         model.addAttribute("active", "audit");
         return "audit";
     }
@@ -66,13 +66,13 @@ public class AdminController {
      * Одобрить заявку (demo).
      */
     @org.springframework.web.bind.annotation.PostMapping("/requests/{id}/approve")
-    public String approveRequestPost(@org.springframework.web.bind.annotation.PathVariable Long id) {
+    public String approveRequestPost(@org.springframework.web.bind.annotation.PathVariable Integer id) {
         // TODO: логика approve — для MVP помечаем как обработано в репозитории
         return "redirect:/requests";
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/requests/{id}/reject")
-    public String rejectRequestPost(@org.springframework.web.bind.annotation.PathVariable Long id) {
+    public String rejectRequestPost(@org.springframework.web.bind.annotation.PathVariable Integer id) {
         // TODO: логика reject
         return "redirect:/requests";
     }

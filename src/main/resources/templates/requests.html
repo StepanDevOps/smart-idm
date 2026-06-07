@@ -36,10 +36,10 @@
                         <tr th:each="r : ${requests}">
                             <td th:text="${r.id}">1</td>
                             <td>
-                                <div th:text="${r.user != null ? r.user.firstName + ' ' + r.user.lastName : '—'}">Ivanov</div>
-                                <div class="small mono text-muted" th:text="${r.user != null ? r.user.login : '—'}">ivanov</div>
+                                <div th:text="${r.requestor != null ? r.requestor.firstName + ' ' + r.requestor.lastName : '—'}">Ivanov</div>
+                                <div class="small mono text-muted" th:text="${r.requestor != null ? r.requestor.login : '—'}">ivanov</div>
                             </td>
-                            <td th:text="${r.targetSystem}">DEFAULT</td>
+                            <td th:text="${r.role != null and r.role.system != null ? r.role.system.name : '—'}">DEFAULT</td>
                             <td th:text="${r.status}">CREATED</td>
                             <td th:text="${r.createdAt}">2026-06-07</td>
                             <td>

@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.mtkp.idm.model.EventType;
-import ru.mtkp.idm.model.IdmRequest;
 import ru.mtkp.idm.model.RequestStatus;
 import ru.mtkp.idm.model.User;
-import ru.mtkp.idm.repository.IdmRequestRepository;
 import ru.mtkp.idm.repository.UserRepository;
 
 /**
@@ -30,7 +28,6 @@ public class WorkflowEngineService {
 	@Autowired
 	private ProvisioningService provisioningService;
 	private final UserRepository userRepository;
-	private final IdmRequestRepository idmRequestRepository;
 
 	/**
 	 * Обрабатывает входящее IDM-событие и маршрутизирует его в нужный сервис.
@@ -45,57 +42,48 @@ public class WorkflowEngineService {
 		var type = parseEventType(eventType);
 		var user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
-
-		var request = IdmRequest.builder()
-				.user(user)
-				.status(RequestStatus.CREATED)
-				.targetSystem(extractTargetSystem(details))
-				.roleName(extractRoleName(details))
-				.build();
-		request = idmRequestRepository.save(request);
-
+		// В демо-версии не сохраняем отдельную сущность IdmRequest — бизнес-логика выполняется сразу
 		switch (type) {
-			case HR_EVENT -> handleHrEvent(user, details, request);
-			case ACCESS_REQUEST -> handleAccessRequest(user, details, request);
+			case HR_EVENT -> handleHrEvent(user, details);
+			case ACCESS_REQUEST -> handleAccessRequest(user, details);
 			default -> throw new IllegalStateException("Неподдерживаемый тип события: " + type);
 		}
 
-		request.setStatus(RequestStatus.COMPLETED);
-		idmRequestRepository.save(request);
-		log.info("IDM-событие обработано успешно, requestId={}", request.getId());
+		log.info("IDM-событие обработано успешно для пользователя {}", user.getLogin());
 	}
 
-	private void handleHrEvent(User user, String details, IdmRequest request) {
+	private void handleHrEvent(User user, String details) {
 		// Оставляем статус CREATED до завершения обработки, подробные статусы не определены в SQL
 
 		if (isJoiner(details)) {
 			log.info("Запущена обработка Joiner для пользователя {}", user.getLogin());
 			identityService.processJoiner(user, details);
-			provisioningService.createAccount(user, request.getTargetSystem(), request.getRoleName());
+			provisioningService.createAccount(user, extractTargetSystem(details), extractRoleName(details));
 			return;
 		}
 
 		if (isMover(details)) {
 			log.info("Запущена обработка Mover для пользователя {}", user.getLogin());
 			identityService.processMover(user, details);
-			provisioningService.createAccount(user, request.getTargetSystem(), request.getRoleName());
+			provisioningService.createAccount(user, extractTargetSystem(details), extractRoleName(details));
 			return;
 		}
 
 		if (isLeaver(details)) {
 			log.info("Запущена обработка Leaver для пользователя {}", user.getLogin());
 			identityService.processLeaver(user, details);
-			provisioningService.blockAccount(user, request.getTargetSystem());
+			provisioningService.blockAccount(user, extractTargetSystem(details));
 			return;
 		}
 
 		log.info("HR-событие не распознано, заявка будет помечена как завершенная без действий");
 	}
 
-	private void handleAccessRequest(User user, String details, IdmRequest request) {
+	private void handleAccessRequest(User user, String details) {
 		// Оставляем статус CREATED до завершения
 		log.info("Запущена обработка Access Request для пользователя {}", user.getLogin());
-		provisioningService.createAccount(user, request.getTargetSystem(), request.getRoleName());
+		// В демо используем данные из details — реальная реализация должна извлекать target/role
+		provisioningService.createAccount(user, extractTargetSystem(details), extractRoleName(details));
 	}
 
 	private EventType parseEventType(String eventType) {

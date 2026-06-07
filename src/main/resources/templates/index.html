@@ -49,9 +49,9 @@
     <tbody>
     <tr th:each="request : ${requests}">
         <td th:text="${request.id}"></td>
-        <td th:text="${request.user != null ? request.user.username : '—'}"></td>
-        <td th:text="${request.targetSystem}"></td>
-        <td th:text="${request.roleName}"></td>
+        <td th:text="${request.requestor != null ? request.requestor.firstName + ' ' + request.requestor.lastName : '—'}"></td>
+        <td th:text="${request.role != null and request.role.system != null ? request.role.system.name : '—'}"></td>
+        <td th:text="${request.role != null ? request.role.name : '—'}"></td>
         <td th:text="${request.status}"></td>
         <td th:text="${request.createdAt}"></td>
     </tr>
