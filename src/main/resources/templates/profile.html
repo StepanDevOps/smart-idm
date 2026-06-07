@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Profile — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('profile')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <div class="card p-3 text-center">
+                        <div class="mb-2">
+                            <div class="avatar rounded-circle bg-primary text-white mx-auto" style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-weight:600;">A</div>
+                        </div>
+                        <h6 th:text="${user != null ? user.firstName + ' ' + user.lastName : '—'}">Иван Иванов</h6>
+                        <div class="small mono text-muted" th:text="${user != null ? user.login : '—'}">ivanov</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-8">
+                    <div class="card p-3">
+                        <h6 class="mb-3" th:text="#{profile.personalData}">Personal data</h6>
+                        <dl class="row">
+                            <dt class="col-sm-3">Email</dt>
+                            <dd class="col-sm-9" th:text="${user != null ? user.emailWork : '—'}">ivanov@example.com</dd>
+
+                            <dt class="col-sm-3">Department</dt>
+                            <dd class="col-sm-9">IT</dd>
+                        </dl>
+                        <hr />
+                        <h6 class="mb-3" th:text="#{profile.accounts}">Accounts</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="mono">ivanov@ldap</div>
+                                    <div class="small text-muted">LDAP / Active</div>
+                                </div>
+                                <div><span class="badge bg-success">Active</span></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
+

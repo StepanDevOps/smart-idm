@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Audit — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('audit')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <h5 th:text="#{audit.title}">Audit Log</h5>
+            <div class="card p-3">
+                <div class="mono small">
+                    <div th:each="e : ${events}">
+                        <div class="mb-2"><span class="text-muted small" th:text="${e.createdAt}">2026-06-07</span> — <span th:text="${e.id}">evt-1</span> — <span th:text="${e.status}">STATUS</span> — <span th:text="${e.user != null ? e.user.login : 'system'}">system</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
+

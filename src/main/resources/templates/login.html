@@ -45,13 +45,28 @@
                     <input id="password" name="password" type="password" class="form-control" placeholder="••••••••" required>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="remember-me" id="rememberMe">
-                        <label class="form-check-label small" for="rememberMe" th:text="#{login.remember}">Remember me</label>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remember-me" id="rememberMe">
+                            <label class="form-check-label small" for="rememberMe" th:text="#{login.remember}">Remember me</label>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-globe"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                                        <li><a class="dropdown-item" href="?lang=en" th:text="#{lang.english}">English</a></li>
+                                        <li><a class="dropdown-item" href="?lang=ru" th:text="#{lang.russian}">Русский</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary" id="themeToggle" th:title="#{button.toggleTheme}"><i class="bi bi-circle-half"></i></button>
+                            </div>
+                        </div>
                     </div>
-                    <a href="#" class="small mono text-decoration-none">help</a>
-                </div>
 
                 <div class="d-grid">
                     <button class="btn btn-primary" type="submit">
@@ -84,6 +99,35 @@
             }, false)
         })
     })()
+</script>
+<script>
+    // Theme cookie helper (apply theme on login page too)
+    function setCookie(name, value, days) {
+        var maxAge = days * 24 * 60 * 60;
+        document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + maxAge + '; samesite=lax';
+    }
+    function getCookie(name) {
+        var value = '; ' + document.cookie;
+        var parts = value.split('; ' + name + '=');
+        if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+        return null;
+    }
+    function applyTheme(theme, persist){
+        var root = document.documentElement;
+        var isDark = theme === 'dark';
+        root.classList.toggle('dark-theme', isDark);
+        root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        if (persist !== false) setCookie('smart-idm-theme', isDark ? 'dark' : 'light', 365);
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+        applyTheme(getCookie('smart-idm-theme') || 'light', false);
+        document.addEventListener('click', function(e){
+            if (e.target && (e.target.id === 'themeToggle' || e.target.closest('#themeToggle'))){
+                var isDarkNow = !document.documentElement.classList.contains('dark-theme');
+                applyTheme(isDarkNow ? 'dark' : 'light', true);
+            }
+        });
+    });
 </script>
 </body>
 </html>

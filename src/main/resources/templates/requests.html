@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Requests — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('requests')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="#{nav.requests}">Requests</h5>
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.all}">All</button>
+                    <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.pending}">Pending</button>
+                    <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.approved}">Approved</button>
+                    <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.rejected}">Rejected</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th th:text="#{table.column.id}">ID</th>
+                            <th th:text="#{table.column.user}">User</th>
+                            <th th:text="#{column.target}">Target</th>
+                            <th th:text="#{table.column.status}">Status</th>
+                            <th th:text="#{column.requested}">Requested</th>
+                            <th th:text="#{column.actions}">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="r : ${requests}">
+                            <td th:text="${r.id}">1</td>
+                            <td>
+                                <div th:text="${r.user != null ? r.user.firstName + ' ' + r.user.lastName : '—'}">Ivanov</div>
+                                <div class="small mono text-muted" th:text="${r.user != null ? r.user.login : '—'}">ivanov</div>
+                            </td>
+                            <td th:text="${r.targetSystem}">DEFAULT</td>
+                            <td th:text="${r.status}">CREATED</td>
+                            <td th:text="${r.createdAt}">2026-06-07</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <form th:action="@{'/requests/' + ${r.id} + '/approve'}" method="post">
+                                        <button class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form th:action="@{'/requests/' + ${r.id} + '/reject'}" method="post">
+                                        <button class="btn btn-sm btn-danger">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
+

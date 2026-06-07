@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Users — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('users')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="#{users.title}">Users</h5>
+                <div>
+                    <input class="form-control form-control-sm" th:placeholder="#{users.search.placeholder}" id="userSearch">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th th:text="#{table.column.id}">ID</th>
+                            <th th:text="#{table.column.user}">User</th>
+                            <th th:text="#{table.column.email}">Email</th>
+                            <th th:text="#{table.column.status}">Status</th>
+                            <th th:text="#{column.actions}">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${users}">
+                            <td th:text="${u.id}">1</td>
+                            <td>
+                                <div class="fw-semibold" th:text="${u.firstName} + ' ' + ${u.lastName}">Ivanov</div>
+                                <div class="small mono text-muted" th:text="${u.login}">ivanov</div>
+                            </td>
+                            <td th:text="${u.emailWork}">ivanov@example.com</td>
+                            <td>
+                                <span class="badge bg-success" th:if="${u.status.name() == 'ACTIVE'}" th:text="${u.status}">ACTIVE</span>
+                                <span class="badge bg-secondary" th:if="${u.status.name() != 'ACTIVE'}" th:text="${u.status}">SUSPENDED</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <form th:action="@{'/users/' + ${u.id} + '/suspend'}" method="post">
+                                        <button class="btn btn-sm btn-outline-warning" type="submit" th:text="#{action.suspend}">Suspend</button>
+                                    </form>
+                                    <form th:action="@{'/users/' + ${u.id} + '/terminate'}" method="post">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" th:text="#{action.terminate}">Terminate</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
+
+
