@@ -25,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver() {
         var resolver = new CookieLocaleResolver("smart-idm-locale");
-        resolver.setDefaultLocale(Locale.ENGLISH);
+        resolver.setDefaultLocale(Locale.of("ru"));
         resolver.setCookiePath("/");
         resolver.setCookieMaxAge(Duration.ofDays(365));
         return resolver;
