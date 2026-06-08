@@ -42,7 +42,7 @@ public class WorkflowEngineService {
 		var type = parseEventType(eventType);
 		var user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
-		// В демо-версии не сохраняем отдельную сущность IdmRequest — бизнес-логика выполняется сразу
+		// В демо-версии не сохраняем отдельную сущность Request — бизнес-логика выполняется сразу
 		switch (type) {
 			case HR_EVENT -> handleHrEvent(user, details);
 			case ACCESS_REQUEST -> handleAccessRequest(user, details);
