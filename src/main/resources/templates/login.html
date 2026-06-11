@@ -19,7 +19,7 @@
 
         <div class="form-container sign-up">
             <form th:action="@{/register}" method="post" class="needs-validation" novalidate>
-                <h1 th:text="#{register.title}">Create Account</h1>
+                <h1 style="margin-bottom: 32px;" th:text="#{register.title}">Create Account</h1>
                 <div class="sso-button">
                     <button type="button" class="btn-sso">
                         <i class="bi bi-box-arrow-in-right"></i>
@@ -36,7 +36,7 @@
 
         <div class="form-container sign-in">
             <form th:action="@{/login}" method="post" class="needs-validation" novalidate>
-                <h1 th:text="#{login.title}">Sign In</h1>
+                <h2 style="margin-bottom: 32px;" th:text="#{login.title}">Sign In</h2>
                 <div class="sso-button">
                     <button type="button" class="btn-sso">
                         <i class="bi bi-box-arrow-in-right"></i>
@@ -54,13 +54,13 @@
         <div class="toggle-container">
             <div class="toggle">
                 <div class="toggle-panel toggle-left">
-                    <h1 th:text="#{login.welcomeBack}">Welcome Back!</h1>
-                    <p th:text="#{login.leftPanelDesc}">Enter your personal details to use all of site features</p>
+                    <h1 th:text="#{register.hello}">Hello, Friend!</h1>
+                    <p th:text="#{register.rightPanelDesc}">Register with your personal details to use all site features</p>
                     <button class="hidden" id="login" th:text="#{login.signin}">Sign In</button>
                 </div>
                 <div class="toggle-panel toggle-right">
-                    <h1 th:text="#{register.hello}">Hello, Friend!</h1>
-                    <p th:text="#{register.rightPanelDesc}">Register with your personal details to use all of site features</p>
+                    <h2 th:text="#{login.welcomeBack}">Welcome Back!</h2>
+                    <p th:text="#{login.leftPanelDesc}">Enter your personal details to use all site features</p>
                     <button class="hidden" id="register" th:text="#{register.button}">Sign Up</button>
                 </div>
             </div>

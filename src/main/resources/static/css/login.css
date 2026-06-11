@@ -290,28 +290,39 @@
     border-color: #636e80;
 }
 
-/* Dropdown стили */
+/* ==========================================================================
+   КРАСИВЫЙ И КОМПАКТНЫЙ DROPDOWN (ВЫПАДАЮЩИЙ СПИСОК ЯЗЫКОВ)
+   ========================================================================== */
+
+/* Контейнер меню (сделали его узким и аккуратным) */
 .dropdown-menu {
-    min-width: 120px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 100px;           /* Уменьшили ширину (было 140px) */
+    padding: 3px 0;             /* Минимальные отступы сверху/снизу */
+    border-radius: 8px;         /* Чуть меньше скругление под стать размеру */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+
+    /* Анимация плавного появления */
+    display: block !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
 }
 
-.dark-theme .dropdown-menu,
-[data-theme="dark"] .dropdown-menu {
-    background: #2d3748;
-    border-color: #4a5568;
+/* Состояние при клике (Bootstrap добавляет класс .show) */
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
-.dark-theme .dropdown-item,
-[data-theme="dark"] .dropdown-item {
-    color: #e2e8f0;
-}
-
-.dark-theme .dropdown-item:hover,
-[data-theme="dark"] .dropdown-item:hover {
-    background: #3a4556;
+/* Элементы списка (ссылки на языки) */
+.dropdown-item {
+    font-size: 12px;            /* Уменьшили шрифт (было 14px) */
+    font-weight: 500;
+    padding: 6px 12px;          /* Уменьшили отступы, теперь они не огромные */
+    text-align: center;         /* Центрируем текст для красоты */
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* --- SSO Кнопка --- */
