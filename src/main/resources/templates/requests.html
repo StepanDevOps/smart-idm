@@ -44,11 +44,11 @@
                             <td th:text="${r.createdAt}">2026-06-07</td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <form th:action="@{'/requests/' + ${r.id} + '/approve'}" method="post">
-                                        <button class="btn btn-sm btn-success">Approve</button>
-                                    </form>
-                                    <form th:action="@{'/requests/' + ${r.id} + '/reject'}" method="post">
-                                        <button class="btn btn-sm btn-danger">Reject</button>
+                                    <a th:href="@{'/requests/' + ${r.id} + '/approve'}" class="btn btn-sm btn-success">
+                                        Одобрить
+                                    </a>
+                                    <form th:action="@{'/requests/' + ${r.id} + '/reject'}" method="post" style="display:inline;">
+                                        <button class="btn btn-sm btn-danger" type="submit">Отклонить</button>
                                     </form>
                                 </div>
                             </td>

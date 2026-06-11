@@ -4,17 +4,17 @@ import java.util.Locale;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.mtkp.idm.model.EventType;
-import ru.mtkp.idm.model.RequestStatus;
+import ru.mtkp.idm.model.Request;
 import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.repository.UserRepository;
 
 /**
  * Оркестратор бизнес-процесса IDM.
+ * Основная точка входа для обработки всех IDM-событий.
  */
 @Slf4j
 @Service
@@ -22,70 +22,72 @@ import ru.mtkp.idm.repository.UserRepository;
 @Transactional
 public class WorkflowEngineService {
 
-	@Autowired
-	private IdentityService identityService;
-
-	@Autowired
-	private ProvisioningService provisioningService;
+	private final IdentityService identityService;
+	private final ProvisioningService provisioningService;
+	private final RequestService requestService;
 	private final UserRepository userRepository;
 
 	/**
 	 * Обрабатывает входящее IDM-событие и маршрутизирует его в нужный сервис.
 	 *
-	 * @param eventType тип события
+	 * @param eventType тип события (HR_EVENT или ACCESS_REQUEST)
 	 * @param userId идентификатор пользователя
 	 * @param details дополнительные сведения
+	 * @return результат обработки (успех/неудача)
 	 */
-	public void handleIdmEvent(String eventType, Long userId, String details) {
-		log.info("Получено IDM-событие: тип={}, userId={}", eventType, userId);
+	public boolean handleIdmEvent(String eventType, Long userId, String details) {
+		log.info("Получено IDM-событие: тип={}, userId={}, details={}", eventType, userId, details);
 
-		var type = parseEventType(eventType);
-		var user = userRepository.findById(userId)
+		EventType type = parseEventType(eventType);
+		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
-		// В демо-версии не сохраняем отдельную сущность Request — бизнес-логика выполняется сразу
-		switch (type) {
+
+		boolean result = switch (type) {
 			case HR_EVENT -> handleHrEvent(user, details);
 			case ACCESS_REQUEST -> handleAccessRequest(user, details);
-			default -> throw new IllegalStateException("Неподдерживаемый тип события: " + type);
-		}
+		};
 
-		log.info("IDM-событие обработано успешно для пользователя {}", user.getLogin());
+		log.info("IDM-событие обработано: тип={}, userId={}, result={}", eventType, userId, result);
+		return result;
 	}
 
-	private void handleHrEvent(User user, String details) {
-		// Оставляем статус CREATED до завершения обработки, подробные статусы не определены в SQL
-
-		if (isJoiner(details)) {
-			log.info("Запущена обработка Joiner для пользователя {}", user.getLogin());
-			identityService.processJoiner(user, details);
-			provisioningService.createAccount(user, extractTargetSystem(details), extractRoleName(details));
-			return;
-		}
-
-		if (isMover(details)) {
-			log.info("Запущена обработка Mover для пользователя {}", user.getLogin());
-			identityService.processMover(user, details);
-			provisioningService.createAccount(user, extractTargetSystem(details), extractRoleName(details));
-			return;
-		}
-
-		if (isLeaver(details)) {
-			log.info("Запущена обработка Leaver для пользователя {}", user.getLogin());
-			identityService.processLeaver(user, details);
-			provisioningService.blockAccount(user, extractTargetSystem(details));
-			return;
-		}
-
-		log.info("HR-событие не распознано, заявка будет помечена как завершенная без действий");
+	/**
+	 * Обработка HR-события (Joiner/Mover/Leaver).
+	 * Вызывает подпрограмму processLifecycleEvent из IdentityService (рис. 8.2).
+	 */
+	private boolean handleHrEvent(User user, String details) {
+		log.info("Запуск обработки HR-события для пользователя {}", user.getLogin());
+		return identityService.processLifecycleEvent(details, user, details);
 	}
 
-	private void handleAccessRequest(User user, String details) {
-		// Оставляем статус CREATED до завершения
-		log.info("Запущена обработка Access Request для пользователя {}", user.getLogin());
-		// В демо используем данные из details — реальная реализация должна извлекать target/role
-		provisioningService.createAccount(user, extractTargetSystem(details), extractRoleName(details));
+	/**
+	 * Обработка события запроса доступа.
+	 * Создаёт заявку и запускает workflow согласования (рис. 8.3).
+	 */
+	private boolean handleAccessRequest(User user, String details) {
+		log.info("Запуск обработки Access Request для пользователя {}", user.getLogin());
+
+		// В демо-версии используем заглушки для roleName и targetSystem
+		// В реальной системе эти данные извлекаются из details или формы заявки
+		String roleName = extractRoleName(details);
+		String targetSystem = extractTargetSystem(details);
+		String justification = extractJustification(details);
+
+		Request request = requestService.createAccessRequest(
+				user,  // requestor
+				user,  // requestedFor (в демо — сам себе запрашивает)
+				roleName,
+				targetSystem,
+				justification
+		);
+
+		log.info("Заявка на доступ создана: id={}, status={}", request.getId(), request.getStatus());
+		return true;
 	}
 
+	/**
+	 * Парсинг типа события.
+	 */
 	private EventType parseEventType(String eventType) {
 		if (eventType == null || eventType.isBlank()) {
 			throw new IllegalArgumentException("Тип события не задан");
@@ -98,28 +100,21 @@ public class WorkflowEngineService {
 		}
 	}
 
-	private boolean isJoiner(String details) {
-		return containsToken(details, "joiner");
-	}
-
-	private boolean isMover(String details) {
-		return containsToken(details, "mover");
-	}
-
-	private boolean isLeaver(String details) {
-		return containsToken(details, "leaver");
-	}
-
-	private boolean containsToken(String details, String token) {
-		return details != null && details.toLowerCase(Locale.ROOT).contains(token);
-	}
+	// ==================== Вспомогательные методы для извлечения данных ====================
 
 	private String extractTargetSystem(String details) {
+		// В демо-версии — заглушка
 		return "DEFAULT_SYSTEM";
 	}
 
 	private String extractRoleName(String details) {
+		// В демо-версии — заглушка
 		return "DEFAULT_ROLE";
+	}
+
+	private String extractJustification(String details) {
+		// В демо-версии используем details как обоснование
+		return details != null ? details : "Запрос доступа";
 	}
 }
 

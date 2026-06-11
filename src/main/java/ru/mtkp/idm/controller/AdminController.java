@@ -3,6 +3,8 @@ package ru.mtkp.idm.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import ru.mtkp.idm.repository.UserRepository;
 import ru.mtkp.idm.repository.RequestRepository;
@@ -21,9 +23,6 @@ public class AdminController {
         this.requestRepository = requestRepository;
     }
 
-    /**
-     * Список пользователей (администрирование идентичностей).
-     */
     @GetMapping("/users")
     public String users(Model model) {
         model.addAttribute("users", userRepository.findAll());
@@ -31,9 +30,6 @@ public class AdminController {
         return "users";
     }
 
-    /**
-     * Портал самообслуживания: список заявок текущего пользователя (демо показывает все заявки).
-     */
     @GetMapping("/requests")
     public String requests(Model model) {
         model.addAttribute("requests", requestRepository.findAll());
@@ -41,9 +37,6 @@ public class AdminController {
         return "requests";
     }
 
-    /**
-     * Журнал аудита — список событий (демо: используем заявки как записи).
-     */
     @GetMapping("/audit")
     public String audit(Model model) {
         model.addAttribute("events", requestRepository.findAll());
@@ -51,9 +44,6 @@ public class AdminController {
         return "audit";
     }
 
-    /**
-     * Личный кабинет пользователя (показываем информацию о первом пользователе как демо).
-     */
     @GetMapping("/profile")
     public String profile(Model model) {
         var user = userRepository.findAll().stream().findFirst().orElse(null);
@@ -62,34 +52,13 @@ public class AdminController {
         return "profile";
     }
 
-    /**
-     * Одобрить заявку (demo).
-     */
-    @org.springframework.web.bind.annotation.PostMapping("/requests/{id}/approve")
-    public String approveRequestPost(@org.springframework.web.bind.annotation.PathVariable Integer id) {
-        // TODO: логика approve — для MVP помечаем как обработано в репозитории
-        return "redirect:/requests";
-    }
-
-    @org.springframework.web.bind.annotation.PostMapping("/requests/{id}/reject")
-    public String rejectRequestPost(@org.springframework.web.bind.annotation.PathVariable Integer id) {
-        // TODO: логика reject
-        return "redirect:/requests";
-    }
-
-    // Пример действий над пользователем
-    @org.springframework.web.bind.annotation.PostMapping("/users/{id}/suspend")
-    public String suspendUserPost(@org.springframework.web.bind.annotation.PathVariable Long id) {
-        // TODO: пометить пользователя как приостановленный
+    @PostMapping("/users/{id}/suspend")
+    public String suspendUserPost(@PathVariable Long id) {
         return "redirect:/users";
     }
 
-    @org.springframework.web.bind.annotation.PostMapping("/users/{id}/terminate")
-    public String terminateUserPost(@org.springframework.web.bind.annotation.PathVariable Long id) {
-        // TODO: выполнить процедуру увольнения
+    @PostMapping("/users/{id}/terminate")
+    public String terminateUserPost(@PathVariable Long id) {
         return "redirect:/users";
     }
 }
-
-
-
