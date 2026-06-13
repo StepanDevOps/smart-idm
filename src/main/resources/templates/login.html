@@ -91,23 +91,95 @@
     </div>
 </div>
 
+<div id="cookieBanner" style="
+    position: fixed !important;
+    bottom: 24px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 500px !important;
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    padding: 16px 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    z-index: 99999999 !important;
+    display: none !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+">
+    <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: wrap !important; gap: 15px !important;">
+        <div style="flex: 1 1 300px !important; text-align: left !important;">
+            <span th:text="#{cookie.banner.text}">Мы используем файлы cookie для улучшения работы сайта.</span>
+        </div>
+        <div style="flex: 0 0 auto !important;">
+            <button id="cookieAcceptBtn" style="
+                background-color: #ffffff !important;
+                color: #212529 !important;
+                border: none !important;
+                padding: 6px 24px !important;
+                font-weight: 600 !important;
+                border-radius: 4px !important;
+                cursor: pointer !important;
+                font-size: 14px !important;
+                transition: background-color 0.2s !important;
+            " th:text="#{cookie.banner.ok}">ОК</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/js/login.js}"></script>
+<script th:src="@{/js/utils.js?v=2}"></script>
+<script th:src="@{/js/login.js?v=2}"></script>
+
 <script>
-    // Клиентская валидация Bootstrap
     (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
+        'use strict';
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const BANNER_COOKIE_NAME = "smart-idm-cookie-accepted";
+            const banner = document.getElementById("cookieBanner");
+            const acceptBtn = document.getElementById("cookieAcceptBtn");
+
+            if (!banner || !acceptBtn || typeof getCookie !== "function") {
+                return;
+            }
+
+            // Если согласия нет, форсируем отображение вопреки стилям скрытия макетов
+            if (!getCookie(BANNER_COOKIE_NAME)) {
+                banner.style.setProperty("display", "block", "important");
+                banner.style.setProperty("opacity", "1", "important");
+                banner.style.setProperty("visibility", "visible", "important");
+            }
+
+            // Эффект наведения (hover) на кнопку согласия
+            acceptBtn.addEventListener("mouseover", function() { this.style.backgroundColor = "#e2e6ea"; });
+            acceptBtn.addEventListener("mouseout", function() { this.style.backgroundColor = "#ffffff"; });
+
+            // Обработчик клика
+            acceptBtn.addEventListener("click", function () {
+                setCookie(BANNER_COOKIE_NAME, "true", 365);
+                banner.style.setProperty("display", "none", "important");
+            });
+        });
+    })();
+</script>
+
+<script>
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
         Array.prototype.slice.call(forms).forEach(function (form) {
             form.addEventListener('submit', function (event) {
                 if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })()
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
 </script>
 </body>
 </html>
