@@ -44,6 +44,12 @@
                 </a>
             </li>
             <li>
+                <a th:href="@{/target-systems}" th:classappend="${active == 'target-systems'} ? ' active' : ''" class="nav-link">
+                    <i class="bi bi-hdd-network me-2"></i>
+                    <span th:text="#{nav.targetSystems}">Target Systems</span>
+                </a>
+            </li>
+            <li>
                 <a th:href="@{/audit}" th:classappend="${active == 'audit'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-journal-text me-2"></i>
                     <span th:text="#{nav.audit}">Audit Logs</span>

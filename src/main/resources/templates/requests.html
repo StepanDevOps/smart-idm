@@ -47,9 +47,9 @@
                                     <a th:href="@{'/requests/' + ${r.id} + '/approve'}" class="btn btn-sm btn-success">
                                         Одобрить
                                     </a>
-                                    <form th:action="@{'/requests/' + ${r.id} + '/reject'}" method="post" style="display:inline;">
-                                        <button class="btn btn-sm btn-danger" type="submit">Отклонить</button>
-                                    </form>
+                                    <a th:href="@{'/requests/' + ${r.id} + '/reject'}" class="btn btn-sm btn-danger">
+                                        Отклонить
+                                    </a>
                                 </div>
                             </td>
                         </tr>

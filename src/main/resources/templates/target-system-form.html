@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle}">Форма системы</title>
+</head>
+<body>
+    <h1 th:text="${pageTitle}">Форма системы</h1>
+
+    <div th:if="${successMessage}" class="success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
+
+    <form th:if="${isEdit}" method="post" th:action="@{/target-systems/update/{id}(id=${targetSystem.id})}">
+        <input type="hidden" name="id" th:value="${targetSystem.id}" />
+        <table>
+            <tr>
+                <td><label for="name">Название:</label></td>
+                <td>
+                    <input type="text" id="name" name="name" th:value="${targetSystem.name}" required />
+                </td>
+            </tr>
+            <tr>
+                <td><label for="description">Описание:</label></td>
+                <td>
+                    <input type="text" id="description" name="description" th:value="${targetSystem.description}" />
+                </td>
+            </tr>
+            <tr>
+                <td><label for="type">Тип:</label></td>
+                <td>
+                    <select id="type" name="type">
+                        <option value="">-- Не выбрано --</option>
+                        <option value="AD" th:selected="${targetSystem.type?.name() == 'AD'}">Active Directory</option>
+                        <option value="LDAP" th:selected="${targetSystem.type?.name() == 'LDAP'}">LDAP</option>
+                        <option value="WEB_APP" th:selected="${targetSystem.type?.name() == 'WEB_APP'}">Web Application</option>
+                        <option value="DB" th:selected="${targetSystem.type?.name() == 'DB'}">Database</option>
+                        <option value="ERP" th:selected="${targetSystem.type?.name() == 'ERP'}">ERP</option>
+                        <option value="CRM" th:selected="${targetSystem.type?.name() == 'CRM'}">CRM</option>
+                        <option value="MAIL" th:selected="${targetSystem.type?.name() == 'MAIL'}">Mail</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <br />
+        <button type="submit">Обновить</button>
+    </form>
+
+    <form th:if="${!isEdit}" method="post" th:action="@{/target-systems/create}">
+        <table>
+            <tr>
+                <td><label for="name">Название:</label></td>
+                <td>
+                    <input type="text" id="name" name="name" th:value="${targetSystem.name}" required />
+                </td>
+            </tr>
+            <tr>
+                <td><label for="description">Описание:</label></td>
+                <td>
+                    <input type="text" id="description" name="description" th:value="${targetSystem.description}" />
+                </td>
+            </tr>
+            <tr>
+                <td><label for="type">Тип:</label></td>
+                <td>
+                    <select id="type" name="type">
+                        <option value="">-- Не выбрано --</option>
+                        <option value="AD">Active Directory</option>
+                        <option value="LDAP">LDAP</option>
+                        <option value="WEB_APP">Web Application</option>
+                        <option value="DB">Database</option>
+                        <option value="ERP">ERP</option>
+                        <option value="CRM">CRM</option>
+                        <option value="MAIL">Mail</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <br />
+        <button type="submit">Создать</button>
+    </form>
+
+    <p>
+        <a th:href="@{/target-systems}">Назад к списку</a> |
+        <a th:href="@{/}">На главную</a>
+    </p>
+</body>
+</html>

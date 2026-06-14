@@ -23,5 +23,12 @@ public interface ProvisioningService {
 	 * @param targetSystem целевая система
 	 */
 	void blockAccount(User user, String targetSystem);
+
+	/**
+	 * Завершает заявку после успешного provisioning.
+	 *
+	 * @param requestId идентификатор запроса
+	 */
+	void completeRequest(Integer requestId);
 }
 

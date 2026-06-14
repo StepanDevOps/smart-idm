@@ -1,12 +1,19 @@
 package ru.mtkp.idm.model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Index;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,7 +50,24 @@ public class TargetSystem {
     private String connectionDetails;
 
     @Column(name = "sync_enabled", nullable = false)
-    private Boolean syncEnabled = Boolean.TRUE;
+    @Builder.Default
+    private Boolean syncEnabled = Boolean.FALSE;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "system", fetch = FetchType.LAZY)
+    private List<Role> roles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "system", fetch = FetchType.LAZY)
+    private List<Account> accounts = new ArrayList<>();
+
+    @PrePersist
+    void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
 
 

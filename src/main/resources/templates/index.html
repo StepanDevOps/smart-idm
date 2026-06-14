@@ -17,6 +17,14 @@
 <h1 th:text="#{app.name}">smart-idm</h1>
 <p th:text="#{app.description}">MVP IDM system for Joiner, Mover, Leaver and Access Request processing.</p>
 
+<nav style="margin: 1rem 0;">
+    <a th:href="@{/}">Главная</a> |
+    <a th:href="@{/users}">Пользователи</a> |
+    <a th:href="@{/requests}">Заявки</a> |
+    <a th:href="@{/target-systems}">Целевые системы</a> |
+    <a th:href="@{/audit}">Аудит</a>
+</nav>
+
 <h2 th:text="#{section.eventSimulation}">Event Simulation</h2>
 <form th:action="@{/events/simulate}" method="post">
     <label for="eventType" th:text="#{form.label.eventType}">Event Type</label>

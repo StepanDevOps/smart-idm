@@ -45,19 +45,23 @@
         <hr class="my-4"/>
 
         <form th:action="@{'/requests/' + ${requestId} + '/approve'}" method="post">
-            <input type="hidden" name="approverId" th:value="${param.approverId[0]}">
+            <input type="hidden" name="approverId" th:value="${defaultApproverId}">
 
             <div class="form-group">
                 <label>Решение:</label>
                 <div class="d-grid gap-2">
-                    <button type="submit" name="approved" value="true" class="btn btn-success">
+                    <button type="submit" class="btn btn-success">
                         Одобрить
-                    </button>
-                    <button type="submit" name="approved" value="false" class="btn btn-danger">
-                        Отклонить
                     </button>
                 </div>
             </div>
+        </form>
+
+        <form th:action="@{'/requests/' + ${requestId} + '/reject'}" method="post" class="mt-2">
+            <input type="hidden" name="approverId" th:value="${defaultApproverId}">
+            <button type="submit" class="btn btn-danger w-100">
+                Отклонить
+            </button>
         </form>
     </div>
 

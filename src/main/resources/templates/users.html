@@ -25,6 +25,7 @@
                             <th th:text="#{table.column.user}">User</th>
                             <th th:text="#{table.column.email}">Email</th>
                             <th th:text="#{table.column.status}">Status</th>
+                            <th>Аккаунты</th>
                             <th th:text="#{column.actions}">Actions</th>
                         </tr>
                         </thead>
@@ -41,11 +42,18 @@
                                 <span class="badge bg-secondary" th:if="${u.status.name() != 'ACTIVE'}" th:text="${u.status}">SUSPENDED</span>
                             </td>
                             <td>
+                                <a th:href="@{/users/{id}/accounts(id=${u.id})}" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-key"></i> <span th:text="${u.accounts != null ? u.accounts.size() : 0}">0</span>
+                                </a>
+                            </td>
+                            <td>
                                 <div class="btn-group" role="group">
                                     <form th:action="@{'/users/' + ${u.id} + '/suspend'}" method="post">
+                                        <input type="hidden" name="approverId" value="1">
                                         <button class="btn btn-sm btn-outline-warning" type="submit" th:text="#{action.suspend}">Suspend</button>
                                     </form>
                                     <form th:action="@{'/users/' + ${u.id} + '/terminate'}" method="post">
+                                        <input type="hidden" name="approverId" value="1">
                                         <button class="btn btn-sm btn-outline-danger" type="submit" th:text="#{action.terminate}">Terminate</button>
                                     </form>
                                 </div>

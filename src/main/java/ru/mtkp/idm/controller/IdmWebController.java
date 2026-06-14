@@ -52,18 +52,30 @@ public class IdmWebController {
 	public String approveRequestPage(@PathVariable Integer id, Model model) {
 		model.addAttribute("requestId", id);
 		model.addAttribute("request", requestRepository.findById(id).orElse(null));
+		// Берём первого доступного пользователя как утверждающего (для MVP)
+		userRepository.findAll().stream().findFirst()
+				.ifPresent(u -> model.addAttribute("defaultApproverId", u.getId()));
 		return "approve-request";
 	}
 
 	/**
-	 * Обработка решения по заявке (POST).
+	 * Обработка решения по заявке (POST - одобрение).
 	 * Вызывает подпрограмму resolveRequestStep (рис. 8.3).
 	 */
 	@PostMapping("/requests/{id}/approve")
 	public String approveRequestPost(@PathVariable Integer id,
-									 @RequestParam Long approverId,
-									 @RequestParam(defaultValue = "true") boolean approved) {
-		requestService.resolveRequestStep(id, approverId, approved);
+									 @RequestParam Long approverId) {
+		requestService.resolveRequestStep(id, approverId, true);
+		return "redirect:/requests";
+	}
+
+	/**
+	 * Обработка отклонения заявки (POST).
+	 */
+	@PostMapping("/requests/{id}/reject")
+	public String rejectRequestPost(@PathVariable Integer id,
+									@RequestParam Long approverId) {
+		requestService.resolveRequestStep(id, approverId, false);
 		return "redirect:/requests";
 	}
 }

@@ -10,6 +10,7 @@ public enum SystemType {
     DB,
     ERP,
     CRM,
-    MAIL
+    MAIL,
+    OTHER
 }
 

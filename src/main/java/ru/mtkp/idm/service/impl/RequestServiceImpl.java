@@ -40,7 +40,7 @@ public class RequestServiceImpl implements RequestService {
 	private final RoleRepository roleRepository;
 	private final ApprovalStepRepository approvalStepRepository;
 	private final SecurityLogRepository securityLogRepository;
-	private final ProvisioningService provisioningService;
+	private final ProvisioningServiceImpl provisioningService;
 
 	/**
 	 * Создаёт заявку на доступ и инициирует workflow согласования.
@@ -304,6 +304,7 @@ public class RequestServiceImpl implements RequestService {
 				user.getId(), targetSystem, roleName);
 
 		provisioningService.createAccount(user, targetSystem, roleName);
+		provisioningService.completeRequest(request.getId());
 	}
 
 	/**

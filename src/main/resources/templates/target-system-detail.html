@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle}">Детали системы</title>
+</head>
+<body>
+    <h1 th:text="${pageTitle}">Детали системы</h1>
+
+    <div th:if="${successMessage}" class="success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
+
+    <div>
+        <strong>ID:</strong> <span th:text="${system.id}">1</span><br />
+        <strong>Название:</strong> <span th:text="${system.name}">System Name</span><br />
+        <strong>Описание:</strong> <span th:text="${system.description ?: '-'}">Description</span><br />
+        <strong>Тип:</strong> <span th:text="${system.type ?: '-'}">Type</span><br />
+        <strong>Дата создания:</strong> <span th:text="${system.createdAt}">Date</span><br />
+    </div>
+
+    <h2>Роли в системе</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название роли</th>
+                <th>Описание</th>
+                <th>Тип</th>
+                <th>Чувствительная</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="role : ${roles}">
+                <td th:text="${role.id}">1</td>
+                <td th:text="${role.name}">Role Name</td>
+                <td th:text="${role.description ?: '-'}">Description</td>
+                <td th:text="${role.roleType}">Type</td>
+                <td th:text="${role.isSensitive ? 'Да' : 'Нет'}">No</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(roles)}">
+                <td colspan="5">Нет ролей в этой системе</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Аккаунты</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Логин аккаунта</th>
+                <th>Статус</th>
+                <th>Статус провижининга</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="account : ${accounts}">
+                <td th:text="${account.id}">1</td>
+                <td>
+                    <a th:href="@{/users/{id}(id=${account.user.id})}" 
+                       th:text="${account.user.login}">user@domain.com</a>
+                </td>
+                <td th:text="${account.accountLogin}">login@system</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${account.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                          th:text="${account.status}">ACTIVE</span>
+                </td>
+                <td th:text="${account.provisioningStatus}">SUCCESS</td>
+                <td>
+                    <a th:href="@{/users/{userId}/accounts(userId=${account.user.id})}" class="btn btn-sm btn-outline-info">
+                        Все аккаунты
+                    </a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(accounts)}">
+                <td colspan="6">Нет аккаунтов в этой системе</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        <a th:href="@{/target-systems}">Назад к списку</a> |
+        <a th:href="@{/target-systems/new}">Добавить систему</a> |
+        <a th:href="@{/}">На главную</a>
+    </p>
+</body>
+</html>
