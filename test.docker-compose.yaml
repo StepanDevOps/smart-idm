@@ -1,5 +1,5 @@
 services:
-  postgres-17:
+  postgres:
     image: postgres:17
     container_name: idm_postgres-17
     restart: always
@@ -8,14 +8,13 @@ services:
       - POSTGRES_PASSWORD=qweASD123*!
       - POSTGRES_DB=idm
     volumes:
-      - ./data/postgres:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
     networks:
       - smart-idm-network
 
   smart-idm:
     restart: always
     container_name: smart_idm
-    # build: . # Простой билд
     build:
       context: .
       dockerfile: test.Dockerfile
@@ -26,10 +25,31 @@ services:
     networks:
       - smart-idm-network
     depends_on:
-      - postgres-17
+      - postgres
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./data/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - smart-idm-network
+
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./data/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - smart-idm-network
 
 volumes:
-  data:
+  pgdata:
 
 networks:
   smart-idm-network:

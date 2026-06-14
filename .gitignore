@@ -40,6 +40,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### Переменые среды ###
 .env
+.env.test
 .windsurf/
-data/
+
+### Данные (volumes) ###
+# data/
+pgdata/

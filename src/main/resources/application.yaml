@@ -26,3 +26,9 @@ server:
 logging:
   level:
     ru.mtkp.idm: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: [ "prometheus" ]
