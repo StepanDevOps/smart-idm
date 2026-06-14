@@ -1,5 +1,6 @@
 package ru.mtkp.idm.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,12 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
 	 * @return найденная роль
 	 */
 	Optional<Role> findByName(String name);
+
+	/**
+	 * Находит все роли для системы.
+	 *
+	 * @param systemId идентификатор системы
+	 * @return список ролей
+	 */
+	List<Role> findBySystemId(Integer systemId);
 }
