@@ -148,7 +148,11 @@
                     <h5 class="mb-0">Назначенные роли пользователя</h5>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Роли назначаются пользователю и применяются ко всем его аккаунтам в целевых системах.
+                    </div>
+                    <div class="table-responsive mt-3">
                         <table class="table table-hover mb-0">
                             <thead>
                             <tr>
@@ -165,7 +169,9 @@
                                 <td th:text="${assignment.id}">1</td>
                                 <td th:text="${assignment.role.name}">Role Name</td>
                                 <td>
-                                    <span th:text="${assignment.role.system != null ? assignment.role.system.name : '-'}">-</span>
+                                    <span th:text="${assignment.role.system != null ? assignment.role.system.name : 'Общая роль'}"
+                                          th:class="${assignment.role.system == null ? 'text-muted fst-italic' : ''}">
+                                    </span>
                                 </td>
                                 <td th:text="${assignment.assignmentType}">DIRECT</td>
                                 <td th:text="${assignment.effectiveFrom}">2026-01-01</td>
