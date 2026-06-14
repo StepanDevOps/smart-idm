@@ -1,0 +1,36 @@
+services:
+  postgres-17:
+    image: postgres:17
+    container_name: idm_postgres-17
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=qweASD123*!
+      - POSTGRES_DB=idm
+    volumes:
+      - ./data/postgres:/var/lib/postgresql
+    networks:
+      - smart-idm-network
+
+  smart-idm:
+    restart: always
+    container_name: smart_idm
+    # build: . # Простой билд
+    build:
+      context: .
+      dockerfile: test.Dockerfile
+    env_file:
+      - .env.test
+    ports:
+      - "8080:8080"
+    networks:
+      - smart-idm-network
+    depends_on:
+      - postgres-17
+
+volumes:
+  data:
+
+networks:
+  smart-idm-network:
+    driver: bridge

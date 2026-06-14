@@ -42,3 +42,4 @@ build/
 
 .env
 .windsurf/
+data/
