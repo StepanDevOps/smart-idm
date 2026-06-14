@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Account Detail — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('target-systems')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Главная</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/users}">Пользователи</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/users/{id}/accounts(id=${account.user.id})}">Аккаунты</a></li>
+                    <li class="breadcrumb-item active">Детали</li>
+                </ol>
+            </nav>
+
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" th:text="${pageTitle}">Детали аккаунта</h5>
+                    <a th:href="@{/users/{id}/accounts(id=${account.user.id})}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Основная информация</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>ID аккаунта:</th>
+                                    <td th:text="${account.id}">1</td>
+                                </tr>
+                                <tr>
+                                    <th>Пользователь:</th>
+                                    <td>
+                                        <a th:href="@{/users/{id}(id=${account.user.id})}" 
+                                           th:text="${account.user.firstName} + ' ' + ${account.user.lastName}">User</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Логин аккаунта:</th>
+                                    <td th:text="${account.accountLogin}">login@system</td>
+                                </tr>
+                                <tr>
+                                    <th>Система:</th>
+                                    <td>
+                                        <a th:href="@{/target-systems/{id}(id=${account.system.id})}" 
+                                           th:text="${account.system.name}">System</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Статус</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Статус аккаунта:</th>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${account.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                                              th:text="${account.status}">ACTIVE</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Статус провижининга:</th>
+                                    <td th:text="${account.provisioningStatus}">SUCCESS</td>
+                                </tr>
+                                <tr>
+                                    <th>Последний вход:</th>
+                                    <td th:text="${account.lastLoginDate != null ? account.lastLoginDate : 'Не входил'}">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Истечение пароля:</th>
+                                    <td th:text="${account.passwordExpiryDate != null ? account.passwordExpiryDate : 'Не установлено'}">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Действия</h6>
+                            <div class="d-grid gap-2">
+                                <form th:if="${account.status.name() == 'ACTIVE'}"
+                                      th:action="@{/users/{userId}/accounts/{accountId}/block(userId=${account.user.id}, accountId=${account.id})}" 
+                                      method="post"
+                                      onsubmit="return confirm('Заблокировать этот аккаунт?');">
+                                    <button class="btn btn-warning" type="submit">
+                                        <i class="bi bi-lock"></i> Заблокировать аккаунт
+                                    </button>
+                                </form>
+                                <form th:if="${account.status.name() != 'ACTIVE'}"
+                                      th:action="@{/users/{userId}/accounts/{accountId}/unblock(userId=${account.user.id}, accountId=${account.id})}" 
+                                      method="post">
+                                    <button class="btn btn-success" type="submit">
+                                        <i class="bi bi-unlock"></i> Разблокировать аккаунт
+                                    </button>
+                                </form>
+                                <form th:action="@{/users/{userId}/accounts/{accountId}/reset-password(userId=${account.user.id}, accountId=${account.id})}" 
+                                      method="post"
+                                      onsubmit="return confirm('Сбросить пароль? Будет сгенерирован новый случайный пароль.');">
+                                    <button class="btn btn-info text-white" type="submit">
+                                        <i class="bi bi-key"></i> Сбросить пароль
+                                    </button>
+                                </form>
+                                <form th:action="@{/users/{userId}/accounts/{accountId}/revoke-all-roles(userId=${account.user.id}, accountId=${account.id})}" 
+                                      method="post"
+                                      onsubmit="return confirm('Отозвать все назначенные роли?');">
+                                    <button class="btn btn-secondary" type="submit">
+                                        <i class="bi bi-shield-slash"></i> Отозвать все роли
+                                    </button>
+                                </form>
+                                <form th:action="@{/users/{userId}/accounts/{accountId}/delete(userId=${account.user.id}, accountId=${account.id})}" 
+                                      method="post"
+                                      onsubmit="return confirm('ВАЖНО: Удалить аккаунт навсегда? Это действие необратимо!');">
+                                    <button class="btn btn-danger" type="submit">
+                                        <i class="bi bi-trash"></i> Удалить аккаунт
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Навигация</h6>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/users/{id}(id=${account.user.id})}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-person"></i> Профиль пользователя
+                                </a>
+                                <a th:href="@{/target-systems/{id}(id=${account.system.id})}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-hdd-network"></i> Целевая система
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Назначенные роли пользователя</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Роль</th>
+                                <th>Система</th>
+                                <th>Тип назначения</th>
+                                <th>Дата назначения</th>
+                                <th>Истекает</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="assignment : ${assignments}">
+                                <td th:text="${assignment.id}">1</td>
+                                <td th:text="${assignment.role.name}">Role Name</td>
+                                <td>
+                                    <span th:text="${assignment.role.system != null ? assignment.role.system.name : '-'}">-</span>
+                                </td>
+                                <td th:text="${assignment.assignmentType}">DIRECT</td>
+                                <td th:text="${assignment.effectiveFrom}">2026-01-01</td>
+                                <td th:text="${assignment.effectiveTo != null ? assignment.effectiveTo : 'Не истекает'}">-</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(assignments)}">
+                                <td colspan="6" class="text-muted text-center">Нет назначенных ролей</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>

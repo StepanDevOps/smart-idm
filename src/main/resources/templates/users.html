@@ -33,8 +33,9 @@
                         <tr th:each="u : ${users}">
                             <td th:text="${u.id}">1</td>
                             <td>
-                                <div class="fw-semibold" th:text="${u.firstName} + ' ' + ${u.lastName}">Ivanov</div>
-                                <div class="small mono text-muted" th:text="${u.login}">ivanov</div>
+                                <a th:href="@{/users/{id}(id=${u.id})}" class="text-decoration-none">
+                                    <span th:text="${u.firstName} + ' ' + ${u.lastName}">Имя Фамилия</span>
+                                </a>
                             </td>
                             <td th:text="${u.emailWork}">ivanov@example.com</td>
                             <td>
@@ -43,7 +44,7 @@
                             </td>
                             <td>
                                 <a th:href="@{/users/{id}/accounts(id=${u.id})}" class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-key"></i> <span th:text="${u.accounts != null ? u.accounts.size() : 0}">0</span>
+                                    <i class="bi bi-key"></i> Аккаунты
                                 </a>
                             </td>
                             <td>

@@ -51,11 +51,11 @@ public interface TargetSystemRepository extends JpaRepository<TargetSystem, Inte
 	List<ru.mtkp.idm.model.Role> findRolesBySystemId(Integer systemId);
 
 	/**
-	 * Находит все аккаунты для системы.
+	 * Находит все аккаунты для системы (с загрузкой user).
 	 *
 	 * @param systemId идентификатор системы
 	 * @return список аккаунтов
 	 */
-	@Query("SELECT a FROM Account a WHERE a.system.id = :systemId")
+	@Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.system.id = :systemId")
 	List<ru.mtkp.idm.model.Account> findAccountsBySystemId(Integer systemId);
 }

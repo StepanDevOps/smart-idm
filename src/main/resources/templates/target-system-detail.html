@@ -70,8 +70,8 @@
                 </td>
                 <td th:text="${account.provisioningStatus}">SUCCESS</td>
                 <td>
-                    <a th:href="@{/users/{userId}/accounts(userId=${account.user.id})}" class="btn btn-sm btn-outline-info">
-                        Все аккаунты
+                    <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${account.user.id}, accountId=${account.id})}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye"></i> Детали
                     </a>
                 </td>
             </tr>

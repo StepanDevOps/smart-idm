@@ -11,9 +11,14 @@
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 th:text="${pageTitle}">Аккаунты пользователя</h5>
-                <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Назад к пользователю
-                </a>
+                <div>
+                    <a th:href="@{/users/{id}/accounts/new(id=${user.id})}" class="btn btn-sm btn-primary me-2">
+                        <i class="bi bi-plus-circle"></i> Добавить аккаунт
+                    </a>
+                    <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад к пользователю
+                    </a>
+                </div>
             </div>
 
             <div class="card mb-3">
@@ -53,15 +58,23 @@
                             <td th:text="${account.provisioningStatus}">SUCCESS</td>
                             <td>
                                 <div class="btn-group" role="group">
+                                    <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.id}, accountId=${account.id})}"
+                                       class="btn btn-sm btn-outline-info" title="Детали">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     <form th:if="${account.status.name() == 'ACTIVE'}"
                                           th:action="@{/users/{userId}/accounts/{accountId}/block(userId=${user.id}, accountId=${account.id})}" 
                                           method="post">
-                                        <button class="btn btn-sm btn-outline-warning" type="submit">Блокировать</button>
+                                        <button class="btn btn-sm btn-outline-warning" type="submit" title="Заблокировать">
+                                            <i class="bi bi-lock"></i>
+                                        </button>
                                     </form>
                                     <form th:if="${account.status.name() != 'ACTIVE'}"
                                           th:action="@{/users/{userId}/accounts/{accountId}/unblock(userId=${user.id}, accountId=${account.id})}" 
                                           method="post">
-                                        <button class="btn btn-sm btn-outline-success" type="submit">Разблокировать</button>
+                                        <button class="btn btn-sm btn-outline-success" type="submit" title="Разблокировать">
+                                            <i class="bi bi-unlock"></i>
+                                        </button>
                                     </form>
                                 </div>
                             </td>
