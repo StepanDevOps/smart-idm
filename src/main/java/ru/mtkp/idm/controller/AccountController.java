@@ -2,6 +2,7 @@ package ru.mtkp.idm.controller;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,6 @@ import ru.mtkp.idm.service.ProvisioningService;
  */
 @Slf4j
 @Controller
-@RequestMapping("/users/{userId}/accounts")
 @RequiredArgsConstructor
 public class AccountController {
 
@@ -48,9 +48,67 @@ public class AccountController {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     /**
-     * Список всех аккаунтов пользователя.
+     * Список всех учётных записей (глобальный просмотр).
      */
-    @GetMapping
+    @GetMapping("/accounts/all")
+    public String listAllAccounts(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Integer systemId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
+            Model model) {
+
+        log.info("Получение списка всех аккаунтов: userId={}, systemId={}, status={}, search={}",
+                userId, systemId, status, search);
+
+        List<Account> accounts;
+
+        // Фильтрация по параметрам
+        if (userId != null && systemId != null && status != null && !status.isEmpty()) {
+            accounts = accountRepository.findByUserIdAndSystemIdAndStatus(userId, systemId, AccountStatus.valueOf(status));
+        } else if (userId != null && systemId != null) {
+            accounts = accountRepository.findByUserId(userId).stream()
+                    .filter(a -> a.getSystem().getId().equals(systemId))
+                    .toList();
+        } else if (userId != null) {
+            accounts = accountRepository.findByUserId(userId);
+        } else if (systemId != null) {
+            accounts = accountRepository.findAllWithUserAndSystem().stream()
+                    .filter(a -> a.getSystem().getId().equals(systemId))
+                    .toList();
+        } else if (status != null && !status.isEmpty()) {
+            accounts = accountRepository.findAllWithUserAndSystem().stream()
+                    .filter(a -> a.getStatus().name().equals(status))
+                    .toList();
+        } else if (search != null && !search.isEmpty()) {
+            accounts = accountRepository.findByAccountLoginContainingIgnoreCase(search);
+        } else {
+            accounts = accountRepository.findAllWithUserAndSystem();
+        }
+
+        // Получаем список систем и пользователей для фильтров
+        List<TargetSystem> systems = targetSystemRepository.findAll();
+        List<User> users = userRepository.findAll();
+        String[] statuses = Arrays.stream(AccountStatus.values())
+                .map(Enum::name)
+                .toArray(String[]::new);
+
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("systems", systems);
+        model.addAttribute("users", users);
+        model.addAttribute("statuses", statuses);
+        model.addAttribute("selectedUserId", userId);
+        model.addAttribute("selectedSystemId", systemId);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("searchQuery", search);
+        model.addAttribute("pageTitle", "Все учётные записи");
+        return "accounts-all";
+    }
+
+    /**
+     * Список аккаунтов пользователя.
+     */
+    @GetMapping("/users/{userId}/accounts")
     public String listUserAccounts(@PathVariable Integer userId, Model model) {
         User user = userRepository.findById(userId.longValue())
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
@@ -66,7 +124,7 @@ public class AccountController {
     /**
      * Форма создания аккаунта.
      */
-    @GetMapping("/new")
+    @GetMapping("/users/{userId}/accounts/new")
     public String newAccountForm(@PathVariable Integer userId, Model model) {
         User user = userRepository.findById(userId.longValue())
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
@@ -84,9 +142,9 @@ public class AccountController {
     /**
      * Создание аккаунта вручную.
      */
-    @PostMapping("/create")
+    @PostMapping("/users/{userId}/accounts/create")
     public String createAccount(
-            @RequestParam Integer userId,
+            @PathVariable @RequestParam Integer userId,
             @RequestParam Integer systemId,
             @RequestParam String accountLogin,
             @RequestParam(required = false) Integer roleId,
@@ -141,7 +199,7 @@ public class AccountController {
     /**
      * Детальный просмотр аккаунта.
      */
-    @GetMapping("/{accountId}")
+    @GetMapping("/users/{userId}/accounts/{accountId}")
     public String viewAccount(@PathVariable Integer userId, @PathVariable Integer accountId, Model model) {
         Account account = accountRepository.findByIdWithUserAndSystem(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Аккаунт не найден: " + accountId));
@@ -162,7 +220,7 @@ public class AccountController {
     /**
      * Блокировка аккаунта.
      */
-    @PostMapping("/{accountId}/block")
+    @PostMapping("/users/{userId}/accounts/{accountId}/block")
     public String blockAccount(@PathVariable Integer userId, @PathVariable Integer accountId, RedirectAttributes redirectAttributes) {
         log.info("Блокировка аккаунта: accountId={}, userId={}", accountId, userId);
 
@@ -183,7 +241,7 @@ public class AccountController {
     /**
      * Разблокировка аккаунта.
      */
-    @PostMapping("/{accountId}/unblock")
+    @PostMapping("/users/{userId}/accounts/{accountId}/unblock")
     public String unblockAccount(@PathVariable Integer userId, @PathVariable Integer accountId, RedirectAttributes redirectAttributes) {
         log.info("Разблокировка аккаунта: accountId={}, userId={}", accountId, userId);
 
@@ -204,7 +262,7 @@ public class AccountController {
     /**
      * Сброс пароля аккаунта.
      */
-    @PostMapping("/{accountId}/reset-password")
+    @PostMapping("/users/{userId}/accounts/{accountId}/reset-password")
     public String resetPassword(@PathVariable Integer userId, @PathVariable Integer accountId, RedirectAttributes redirectAttributes) {
         log.info("Сброс пароля аккаунта: accountId={}, userId={}", accountId, userId);
 
@@ -230,7 +288,7 @@ public class AccountController {
     /**
      * Удаление аккаунта.
      */
-    @PostMapping("/{accountId}/delete")
+    @PostMapping("/users/{userId}/accounts/{accountId}/delete")
     public String deleteAccount(@PathVariable Integer userId, @PathVariable Integer accountId, RedirectAttributes redirectAttributes) {
         log.info("Удаление аккаунта: accountId={}, userId={}", accountId, userId);
 
@@ -251,7 +309,7 @@ public class AccountController {
     /**
      * Отзыв всех ролей для аккаунта.
      */
-    @PostMapping("/{accountId}/revoke-all-roles")
+    @PostMapping("/users/{userId}/accounts/{accountId}/revoke-all-roles")
     public String revokeAllRoles(@PathVariable Integer userId, @PathVariable Integer accountId, RedirectAttributes redirectAttributes) {
         log.info("Отзыв всех ролей для аккаунта: accountId={}, userId={}", accountId, userId);
 

@@ -1,5 +1,6 @@
 package ru.mtkp.idm.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,10 +27,36 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, 
 
 	/**
 	 * Находит активные назначения ролей по пользователю.
-	 *	
+	 *
 	 * @param userId идентификатор пользователя
 	 * @return список активных назначений ролей
 	 */
 	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role WHERE ra.user.id = :userId AND ra.effectiveTo IS NULL")
 	List<RoleAssignment> findByUserIdAndEffectiveToIsNull(Long userId);
+
+	/**
+	 * Находит истёкшие назначения ролей (где effectiveTo < сегодня).
+	 *
+	 * @return список истёкших назначений ролей
+	 */
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role WHERE ra.effectiveTo IS NOT NULL AND ra.effectiveTo < :today")
+	List<RoleAssignment> findExpiredAssignments(LocalDate today);
+
+	/**
+	 * Находит назначение с загрузкой пользователя и роли.
+	 *
+	 * @param assignmentId идентификатор назначения
+	 * @дополнительно Optional с назначением
+	 */
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role WHERE ra.id = :assignmentId")
+	Optional<RoleAssignment> findByIdWithUserAndRole(Integer assignmentId);
+
+	/**
+	 * Находит пользователей с определённой ролью (активные назначения).
+	 *
+	 * @param roleId идентификатор роли
+	 * @дополнительно список активных назначений с этой ролью
+	 */
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role WHERE ra.role.id = :roleId AND ra.effectiveTo IS NULL")
+	List<RoleAssignment> findByRoleIdAndEffectiveToIsNull(Integer roleId);
 }

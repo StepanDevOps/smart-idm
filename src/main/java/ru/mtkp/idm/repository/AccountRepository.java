@@ -50,4 +50,31 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 	 * @return список учётных записей
 	 */
 	List<Account> findByProvisioningStatus(ru.mtkp.idm.model.ProvisioningStatus provisioningStatus);
+
+	/**
+	 * Находит учётные записи по пользователю, системе и статусу.
+	 *
+	 * @param userId идентификатор пользователя
+	 * @param systemId идентификатор системы
+	 * @param status статус аккаунта
+	 * @return список учётных записей
+	 */
+	List<Account> findByUserIdAndSystemIdAndStatus(Long userId, Integer systemId, ru.mtkp.idm.model.AccountStatus status);
+
+	/**
+	 * Находит учётные записи по логину (поиск).
+	 *
+	 * @param login часть логина
+	 * @return список учётных записей
+	 */
+	@Query("SELECT DISTINCT a FROM Account a JOIN FETCH a.system JOIN FETCH a.user WHERE LOWER(a.accountLogin) LIKE LOWER(CONCAT('%', :login, '%'))")
+	List<Account> findByAccountLoginContainingIgnoreCase(String login);
+
+	/**
+	 * Находит все учётные записи с загрузкой связанных сущностей.
+	 *
+	 * @return список всех учётных записей
+	 */
+	@Query("SELECT DISTINCT a FROM Account a JOIN FETCH a.system JOIN FETCH a.user")
+	List<Account> findAllWithUserAndSystem();
 }

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Все учётные записи — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('accounts-all')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="${pageTitle}">Все учётные записи</h5>
+                <a th:href="@{/}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-house"></i> На главную
+                </a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <!-- Фильтры -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-funnel"></i> Фильтры
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/accounts/all}" method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Пользователь</label>
+                            <select name="userId" class="form-select" th:value="${selectedUserId}">
+                                <option value="">Все пользователи</option>
+                                <option th:each="user : ${users}" 
+                                        th:value="${user.id}" 
+                                        th:text="${user.lastName} + ' ' + ${user.firstName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Целевая система</label>
+                            <select name="systemId" class="form-select" th:value="${selectedSystemId}">
+                                <option value="">Все системы</option>
+                                <option th:each="system : ${systems}" 
+                                        th:value="${system.id}" 
+                                        th:text="${system.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Статус</label>
+                            <select name="status" class="form-select" th:value="${selectedStatus}">
+                                <option value="">Все статусы</option>
+                                <option th:each="status : ${statuses}" 
+                                        th:value="${status}" 
+                                        th:text="${status}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Поиск по логину</label>
+                            <input type="text" name="search" class="form-control" 
+                                   th:value="${searchQuery}" placeholder="Поиск...">
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Таблица аккаунтов -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Система</th>
+                            <th>Логин аккаунта</th>
+                            <th>Статус</th>
+                            <th>Статус провижининга</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="account : ${accounts}">
+                            <td th:text="${account.id}">1</td>
+                            <td>
+                                <a th:href="@{/users/{id}(id=${account.user.id})}" 
+                                   th:text="${account.user.lastName} + ' ' + ${account.user.firstName}">
+                                    User
+                                </a>
+                            </td>
+                            <td th:text="${account.system.name}">System</td>
+                            <td th:text="${account.accountLogin}">login@system</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${account.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                                      th:text="${account.status}">ACTIVE</span>
+                            </td>
+                            <td th:text="${account.provisioningStatus}">SUCCESS</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${account.user.id}, accountId=${account.id})}"
+                                       class="btn btn-sm btn-outline-info" title="Детали">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <form th:if="${account.status.name() == 'ACTIVE'}"
+                                          th:action="@{/users/{userId}/accounts/{accountId}/block(userId=${account.user.id}, accountId=${account.id})}" 
+                                          method="post" style="display: inline;">
+                                        <button class="btn btn-sm btn-outline-warning" type="submit" title="Заблокировать">
+                                            <i class="bi bi-lock"></i>
+                                        </button>
+                                    </form>
+                                    <form th:if="${account.status.name() != 'ACTIVE'}"
+                                          th:action="@{/users/{userId}/accounts/{accountId}/unblock(userId=${account.user.id}, accountId=${account.id})}" 
+                                          method="post" style="display: inline;">
+                                        <button class="btn btn-sm btn-outline-success" type="submit" title="Разблокировать">
+                                            <i class="bi bi-unlock"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(accounts)}">
+                            <td colspan="7">Нет учётных записей по заданным фильтрам</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
