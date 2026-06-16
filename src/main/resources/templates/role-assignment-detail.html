@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Детали назначения — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('role-assignments')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="${pageTitle}">Детали назначения</h5>
+                <a th:href="@{/role-assignments}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад к списку
+                </a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-info-circle"></i> Информация о назначении
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>ID:</strong> <span th:text="${assignment.id}">1</span><br />
+                            <strong>Пользователь:</strong> 
+                            <a th:href="@{/users/{id}(id=${assignment.user.id})}" 
+                               th:text="${assignment.user.lastName} + ' ' + ${assignment.user.firstName}">
+                                User
+                            </a><br />
+                            <strong>Login:</strong> <span th:text="${assignment.user.login}">admin</span><br />
+                            <strong>Email:</strong> <span th:text="${assignment.user.emailWork}">admin@example.com</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Роль:</strong> <span th:text="${assignment.role.name}">Admin</span><br />
+                            <strong>Тип назначения:</strong> 
+                            <span class="badge" 
+                                  th:classappend="${assignment.assignmentType.name() == 'DIRECT'} ? 'bg-primary' : 'bg-secondary'"
+                                  th:text="${assignment.assignmentType}">DIRECT</span><br />
+                            <strong>Причина:</strong> 
+                            <span th:text="${assignment.assignmentReason != null ? assignment.assignmentReason : '—'}">Причина</span>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Дата начала:</strong> 
+                            <span th:text="${#temporals.format(assignment.effectiveFrom, 'dd.MM.yyyy')}">01.01.2024</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Дата окончания:</strong> 
+                            <span th:if="${assignment.effectiveTo != null}" 
+                                  th:text="${#temporals.format(assignment.effectiveTo, 'dd.MM.yyyy')}">01.01.2025</span>
+                            <span th:if="${assignment.effectiveTo == null}" class="text-muted">Бессрочно</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статус назначения -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-flag" th:classappend="${assignment.effectiveTo == null} ? ' text-success' : ' text-muted'"></i>
+                    Статус
+                </div>
+                <div class="card-body">
+                    <div th:if="${assignment.effectiveTo == null}" class="alert alert-success mb-0">
+                        <i class="bi bi-check-circle"></i> Активное назначение
+                    </div>
+                    <div th:if="${assignment.effectiveTo != null}" class="alert alert-secondary mb-0">
+                        <i class="bi bi-clock-history"></i> Истёкшее назначение (по: <span th:text="${#temporals.format(assignment.effectiveTo, 'dd.MM.yyyy')}"></span>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-tools"></i> Действия
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <form th:if="${assignment.effectiveTo == null}"
+                              th:action="@{/role-assignments/{id}(id=${assignment.id})}" 
+                              method="post"
+                              onsubmit="return confirm('Вы уверены, что хотите отозвать это назначение?');">
+                            <input type="hidden" name="_method" value="DELETE"/>
+                            <button class="btn btn-danger" type="submit">
+                                <i class="bi bi-x-circle"></i> Отозвать назначение
+                            </button>
+                        </form>
+                        <a th:href="@{/role-assignments/new}" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Создать новое назначение
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>

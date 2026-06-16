@@ -78,39 +78,45 @@
 
 ### 2.1. RoleAssignmentController
 **Задачи:**
-- [ ] `GET /role-assignments` — список всех назначений
-- [ ] `GET /role-assignments/{id}` — детальный просмотр
-- [ ] `POST /role-assignments` — создать назначение
-- [ ] `PUT /role-assignments/{id}` — обновить назначение
-- [ ] `DELETE /role-assignments/{id}` — отозвать назначение
+- [x] `GET /role-assignments` — список всех назначений
+- [x] `GET /role-assignments/{id}` — детальный просмотр
+- [x] `POST /role-assignments` — создать назначение
+- [x] `PUT /role-assignments/{id}` — обновить назначение
+- [x] `DELETE /role-assignments/{id}` — отозвать назначение
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/controller/RoleAssignmentController.java`
+- `src/main/resources/templates/role-assignments.html`
+- `src/main/resources/templates/role-assignment-form.html`
+- `src/main/resources/templates/role-assignment-detail.html`
 
-**Статус:** ⬜ Не выполнено
+**Статус:** ✅ Выполнено
 
 ---
 
 ### 2.2. Сервис валидации
 **Задачи:**
-- [ ] Создать `Validator` для `RoleAssignment`
-- [ ] Проверка: `effectiveTo >= effectiveFrom`
-- [ ] Проверка: пользователь не уволен (`status != TERMINATED`)
+- [x] Создать `Validator` для `RoleAssignment`
+- [x] Проверка: `effectiveTo >= effectiveFrom`
+- [x] Проверка: пользователь не уволен (`status != TERMINATED`)
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/validator/RoleAssignmentValidator.java`
 
-**Статус:** ⬜ Не выполнено
+**Статус:** ✅ Выполлено
 
 ---
 
 ### 2.3. Улучшение AccountController
 **Задачи:**
-- [ ] Добавить метод `assignRoleToAccount(accountId, roleId)`
-- [ ] Добавить метод `revokeRoleFromAccount(accountId, roleId)`
-- [ ] Добавить валидацию: аккаунт существует, роль существует
+- [x] Добавить метод `assignRoleToAccount(accountId, roleId)`
+- [x] Добавить метод `revokeRoleFromAccount(accountId, roleId)`
+- [x] Добавить валидацию: аккаунт существует, роль существует
 
-**Статус:** ⬜ Не выполнено
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/controller/AccountController.java`
+
+**Статус:** ✅ Выполлено
 
 ---
 

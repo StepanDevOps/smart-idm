@@ -59,4 +59,12 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, 
 	 */
 	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role WHERE ra.role.id = :roleId AND ra.effectiveTo IS NULL")
 	List<RoleAssignment> findByRoleIdAndEffectiveToIsNull(Integer roleId);
+
+	/**
+	 * Находит все назначения с загрузкой пользователя и роли.
+	 *
+	 * @return список всех назначений
+	 */
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role ORDER BY ra.createdAt DESC")
+	List<RoleAssignment> findAllWithUserAndRole();
 }

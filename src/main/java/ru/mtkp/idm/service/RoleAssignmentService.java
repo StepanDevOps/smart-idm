@@ -82,4 +82,11 @@ public interface RoleAssignmentService {
 	 * @return список пользователей с этой ролью
 	 */
 	List<RoleAssignment> getUsersWithRole(Integer roleId);
+
+	/**
+	 * Получает все назначения ролей для всех пользователей.
+	 *
+	 * @return список всех назначений ролей
+	 */
+	List<RoleAssignment> getAllAssignmentsForAllUsers();
 }

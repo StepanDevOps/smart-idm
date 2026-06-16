@@ -151,7 +151,7 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<RoleAssignment> getAssignmentById(Integer assignmentId) {
-		return roleAssignmentRepository.findById(assignmentId);
+		return roleAssignmentRepository.findByIdWithUserAndRole(assignmentId);
 	}
 
 	/**
@@ -174,5 +174,15 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 	public List<RoleAssignment> getUsersWithRole(Integer roleId) {
 		log.info("Получение пользователей с ролью: roleId={}", roleId);
 		return roleAssignmentRepository.findByRoleIdAndEffectiveToIsNull(roleId);
+	}
+
+	/**
+	 * Получает все назначения ролей для всех пользователей.
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<RoleAssignment> getAllAssignmentsForAllUsers() {
+		log.info("Получение всех назначений ролей");
+		return roleAssignmentRepository.findAllWithUserAndRole();
 	}
 }

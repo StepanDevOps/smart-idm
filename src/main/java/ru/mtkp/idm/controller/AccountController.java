@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -28,6 +27,7 @@ import ru.mtkp.idm.repository.RoleRepository;
 import ru.mtkp.idm.repository.TargetSystemRepository;
 import ru.mtkp.idm.repository.UserRepository;
 import ru.mtkp.idm.service.ProvisioningService;
+import ru.mtkp.idm.service.RoleAssignmentService;
 
 /**
  * Контроллер управления учётными записями.
@@ -43,6 +43,7 @@ public class AccountController {
     private final RoleRepository roleRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
     private final ProvisioningService provisioningService;
+    private final RoleAssignmentService roleAssignmentService;
 
     private static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -309,7 +310,7 @@ public class AccountController {
     /**
      * Отзыв всех ролей для аккаунта.
      */
-    @PostMapping("/users/{userId}/accounts/{accountId}/revoke-all-roles")
+    @PostMapping("/{accountId}/revoke-all-roles")
     public String revokeAllRoles(@PathVariable Integer userId, @PathVariable Integer accountId, RedirectAttributes redirectAttributes) {
         log.info("Отзыв всех ролей для аккаунта: accountId={}, userId={}", accountId, userId);
 
@@ -331,6 +332,79 @@ public class AccountController {
 
         redirectAttributes.addFlashAttribute("successMessage",
             "Отозвано " + revokedCount + " назначений ролей");
+        return "redirect:/users/" + userId + "/accounts/" + accountId;
+    }
+
+    /**
+     * Назначение роли аккаунту.
+     */
+    @PostMapping("/{accountId}/assign-role")
+    public String assignRoleToAccount(
+            @PathVariable Integer userId,
+            @PathVariable Integer accountId,
+            @RequestParam Integer roleId,
+            @RequestParam(required = false) String reason,
+            RedirectAttributes redirectAttributes) {
+
+        log.info("Назначение роли аккаунту: accountId={}, userId={}, roleId={}, reason={}",
+                accountId, userId, roleId, reason);
+
+        Account account = accountRepository.findByIdWithUserAndSystem(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Аккаунт не найден: " + accountId));
+
+        if (!account.getUser().getId().equals(userId.longValue())) {
+            throw new IllegalArgumentException("Аккаунт не принадлежит пользователю");
+        }
+
+        try {
+            roleAssignmentService.assignRoleToUser(
+                    userId.longValue(),
+                    roleId,
+                    reason,
+                    null, // effectiveFrom = сегодня
+                    null  // effectiveTo = бессрочно
+            );
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Роль успешно назначена на аккаунт");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/users/" + userId + "/accounts/" + accountId;
+    }
+
+    /**
+     * Отзыв роли у аккаунта.
+     */
+    @PostMapping("/{accountId}/revoke-role/{assignmentId}")
+    public String revokeRoleFromAccount(
+            @PathVariable Integer userId,
+            @PathVariable Integer accountId,
+            @PathVariable Integer assignmentId,
+            RedirectAttributes redirectAttributes) {
+
+        log.info("Отзыв роли у аккаунта: accountId={}, userId={}, assignmentId={}",
+                accountId, userId, assignmentId);
+
+        Account account = accountRepository.findByIdWithUserAndSystem(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Аккаунт не найден: " + accountId));
+
+        if (!account.getUser().getId().equals(userId.longValue())) {
+            throw new IllegalArgumentException("Аккаунт не принадлежит пользователю");
+        }
+
+        try {
+            boolean revoked = roleAssignmentService.revokeRoleAssignment(assignmentId);
+            if (revoked) {
+                redirectAttributes.addFlashAttribute("successMessage", "Роль успешно отозвана");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Назначение уже истекло или не найдено");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
         return "redirect:/users/" + userId + "/accounts/" + accountId;
     }
 

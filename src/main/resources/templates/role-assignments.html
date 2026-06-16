@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Назначения ролей — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('role-assignments')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="${pageTitle}">Назначения ролей</h5>
+                <a th:href="@{/role-assignments/new}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Создать назначение
+                </a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Роль</th>
+                            <th>Тип</th>
+                            <th>С</th>
+                            <th>По</th>
+                            <th>Причина</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="assignment : ${assignments}">
+                            <td th:text="${assignment.id}">1</td>
+                            <td>
+                                <a th:href="@{/users/{id}(id=${assignment.user.id})}" 
+                                   th:text="${assignment.user.lastName} + ' ' + ${assignment.user.firstName}">
+                                    User
+                                </a>
+                            </td>
+                            <td th:text="${assignment.role.name}">Role</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${assignment.assignmentType.name() == 'DIRECT'} ? 'bg-primary' : 'bg-secondary'"
+                                      th:text="${assignment.assignmentType}">DIRECT</span>
+                            </td>
+                            <td th:text="${#temporals.format(assignment.effectiveFrom, 'dd.MM.yyyy')}">01.01.2024</td>
+                            <td>
+                                <span th:if="${assignment.effectiveTo != null}" 
+                                      th:text="${#temporals.format(assignment.effectiveTo, 'dd.MM.yyyy')}">01.01.2025</span>
+                                <span th:if="${assignment.effectiveTo == null}" class="text-muted">—</span>
+                            </td>
+                            <td th:text="${assignment.assignmentReason != null ? assignment.assignmentReason : '—'}">Причина</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/role-assignments/{id}(id=${assignment.id})}"
+                                       class="btn btn-sm btn-outline-info" title="Детали">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <form th:if="${assignment.effectiveTo == null}"
+                                          th:action="@{/role-assignments/{id}(id=${assignment.id})}" 
+                                          method="post"
+                                          onsubmit="return confirm('Отозвать это назначение?');">
+                                        <input type="hidden" name="_method" value="DELETE"/>
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Отозвать">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(assignments)}">
+                            <td colspan="8">Нет назначений ролей</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>

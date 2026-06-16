@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Создать назначение — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('role-assignments')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="${pageTitle}">Создать назначение роли</h5>
+                <a th:href="@{/role-assignments}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад к списку
+                </a>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/role-assignments}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Пользователь *</label>
+                            <select name="userId" class="form-select" required>
+                                <option value="">Выберите пользователя</option>
+                                <option th:each="user : ${users}" 
+                                        th:value="${user.id}" 
+                                        th:text="${user.lastName} + ' ' + ${user.firstName} + ' (' + ${user.login} + ')'">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Роль *</label>
+                            <select name="roleId" class="form-select" required>
+                                <option value="">Выберите роль</option>
+                                <option value="1">Администратор</option>
+                                <option value="2">Пользователь</option>
+                                <option value="3">Менеджер</option>
+                            </select>
+                            <small class="text-muted">В реальном приложении роли загружаются из БД</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Причина назначения</label>
+                            <textarea name="reason" class="form-control" rows="3" 
+                                      placeholder="Укажите причину назначения роли..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Дата начала</label>
+                                    <input type="date" name="effectiveFrom" class="form-control" />
+                                    <small class="text-muted">Если не указано — с текущего дня</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Дата окончания</label>
+                                    <input type="date" name="effectiveTo" class="form-control" />
+                                    <small class="text-muted">Оставьте пустым для бессрочного назначения</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/role-assignments}" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">Создать назначение</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
