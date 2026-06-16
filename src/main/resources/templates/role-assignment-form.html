@@ -36,11 +36,11 @@
                             <label class="form-label">Роль *</label>
                             <select name="roleId" class="form-select" required>
                                 <option value="">Выберите роль</option>
-                                <option value="1">Администратор</option>
-                                <option value="2">Пользователь</option>
-                                <option value="3">Менеджер</option>
+                                <option th:each="role : ${roles}"
+                                        th:value="${role.id}"
+                                        th:text="${role.name} + (role.system != null ? ' (' + role.system.name + ')' : '')">
+                                </option>
                             </select>
-                            <small class="text-muted">В реальном приложении роли загружаются из БД</small>
                         </div>
 
                         <div class="mb-3">

@@ -1,6 +1,7 @@
 package ru.mtkp.idm.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ru.mtkp.idm.dto.RoleAssignmentDTO;
+import ru.mtkp.idm.model.Role;
 import ru.mtkp.idm.model.RoleAssignment;
+import ru.mtkp.idm.model.TargetSystem;
 import ru.mtkp.idm.model.User;
+import ru.mtkp.idm.repository.RoleRepository;
+import ru.mtkp.idm.repository.TargetSystemRepository;
 import ru.mtkp.idm.repository.UserRepository;
 import ru.mtkp.idm.service.RoleAssignmentService;
 
@@ -26,6 +31,8 @@ public class RoleAssignmentController {
 
 	private final RoleAssignmentService roleAssignmentService;
 	private final UserRepository userRepository;
+	private final RoleRepository roleRepository;
+	private final TargetSystemRepository targetSystemRepository;
 
 	/**
 	 * Список всех назначений ролей.
@@ -65,8 +72,13 @@ public class RoleAssignmentController {
 	public String newAssignmentForm(Model model) {
 		log.info("Форма создания назначения");
 
-		java.util.List<User> users = userRepository.findAll();
+		List<User> users = userRepository.findAll();
+		List<Role> roles = roleRepository.findAllWithSystem();
+		List<TargetSystem> systems = targetSystemRepository.findAll();
+
 		model.addAttribute("users", users);
+		model.addAttribute("roles", roles);
+		model.addAttribute("systems", systems);
 		model.addAttribute("assignment", new RoleAssignmentDTO());
 		model.addAttribute("pageTitle", "Создать назначение роли");
 		return "role-assignment-form";

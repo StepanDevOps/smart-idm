@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import ru.mtkp.idm.model.Role;
@@ -29,4 +30,12 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
 	 * @return список ролей
 	 */
 	List<Role> findBySystemId(Integer systemId);
+
+	/**
+	 * Находит все роли с загрузкой системы.
+	 *
+	 * @return список всех ролей
+	 */
+	@Query("SELECT DISTINCT r FROM Role r LEFT JOIN FETCH r.system ORDER BY r.name")
+	List<Role> findAllWithSystem();
 }
