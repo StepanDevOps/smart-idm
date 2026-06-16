@@ -120,9 +120,112 @@
 
 ---
 
-## 🟢 Приоритет 3: Дополнительные возможности
+### 2.4. Структура организации и фильтрация ролей
+**Задачи:**
+- [x] Проверить сущность `Department` (само-ссылка для дерева)
+- [x] Реализовать выбор системы перед выбором роли (UI)
+- [x] Показывать только глобальные роли (без системы) или роли конкретной системы
+- [x] Добавить AJAX-эндпоинт `/role-assignments/roles/{systemId}` для фильтрации
+- [ ] Реализовать выбор департамента перед выбором роли (INDIRECT)
+- [ ] Показывать роли, доступные для департамента (через future `DepartmentRole` mapping)
+- [ ] Реализовать авто-назначение ролей при HR-событиях на основе орг-структуры
 
-### 3.1. Аудит и логирование
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/controller/RoleAssignmentController.java`
+- `src/main/resources/templates/role-assignment-form.html`
+- `src/main/java/ru/mtkp/idm/repository/RoleRepository.java`
+- `src/main/java/ru/mtkp/idm/model/Department.java` *(future)*
+- `src/main/java/ru/mtkp/idm/repository/DepartmentRepository.java` *(future)*
+
+**Статус:** 🟡 Частично выполнено (UI для DIRECT — ✅, INDIRECT — ⬜)
+
+---
+
+## 🏗 Приоритет 3: Иерархия департаментов (INDIRECT assignments)
+
+> **Цель:** Поддержка автоматического (INDIRECT) назначения ролей на основе организационной структуры.
+
+### 3.1. Дерево департаментов
+**Задачи:**
+- [ ] Проверить само-ссылку в `Department` (`parent` → `Department`)
+- [ ] Добавить репозиторийный метод для получения всех подчинённых департаментов (рекурсивно)
+- [ ] Добавить методы для проверки, является ли департамент родителем/потомком другого
+- [ ] Добавить валидацию: нельзя назначить департамент родителем самого себя
+
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/model/Department.java`
+- `src/main/java/ru/mtkp/idm/repository/DepartmentRepository.java`
+
+**Ожидаемый JPQL для рекурсии:**
+```java
+// Поиск всех потомков (уровень-зависимый, N+1)
+@Query("SELECT d FROM Department d WHERE d.parent.id = :parentId")
+List<Department> findChildren(Integer parentId);
+
+// Полный путь (path) через tree traversal — требует PostgreSQL pg_pathman или рекурсивного CTE
+@Query(value = "WITH RECURSIVE dept_tree AS (" +
+    "  SELECT id, parent_id, 1 AS level, ARRAY[id] AS path FROM department WHERE parent_id IS NULL" +
+    "  UNION ALL" +
+    "  SELECT d.id, d.parent_id, dt.level + 1, dt.path || d.id " +
+    "  FROM department d JOIN dept_tree dt ON d.parent_id = dt.id" +
+") SELECT * FROM dept_tree ORDER BY level", nativeQuery = true)
+List<Map<String, Object>> findAllWithPath();
+```
+
+**Статус:** ⬜ Не начато
+
+---
+
+### 3.2. Mapping департамент → роли
+**Задачи:**
+- [ ] Создать сущность `DepartmentRole` (многие-ко-многим: `Department` ↔ `Role`)
+- [ ] Добавить в `RoleAssignment` тип назначения: `DIRECT` (через User) или `INDIRECT` (через Department)
+- [ ] Обновить `RoleAssignmentValidator` для проверки INDIRECT назначений
+- [ ] Добавить метод `getRolesByDepartment(departmentId)` в `RoleRepository`
+
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/model/DepartmentRole.java` *(new)*
+- `src/main/java/ru/mtkp/idm/model/RoleAssignment.java` *(update)*
+- `src/main/java/ru/mtkp/idm/repository/DepartmentRoleRepository.java` *(new)*
+
+**Статус:** ⬜ Не начато
+
+---
+
+### 3.3. Интеграция с HR-событиями
+**Задачи:**
+- [ ] При создании/изменении пользователя проверять его департамент
+- [ ] Если департамент имеет mapped роли — создать `RoleAssignment` с типом `INDIRECT`
+- [ ] Добавить `WorkflowEngineService` триггер на HR-события (`USER_CREATED`, `DEPARTMENT_CHANGED`)
+- [ ] Логировать автоматические назначения в `AuditLog`
+
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/service/WorkflowEngineService.java`
+- `src/main/java/ru/mtkp/idm/service/IdentityService.java`
+- `src/main/java/ru/mtkp/idm/model/AuditLog.java` *(из Приоритета 3.1)*
+
+**Статус:** ⬜ Не начато
+
+---
+
+### 3.4. UI для управления INDIRECT назначениями
+**Задачи:**
+- [ ] Форма: выбор департамента → отображение mapped ролей → кнопка «Назначить всем сотрудникам»
+- [ ] Таблица: список всех INDIRECT назначений с фильтрацией по департаменту
+- [ ] Индикатор в карточке пользователя: «Роль получена INDIRECT (через департамент X)»
+
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/controller/DepartmentController.java` *(new)*
+- `src/main/resources/templates/department-roles.html` *(new)*
+- `src/main/resources/templates/user-detail.html` *(update)*
+
+**Статус:** ⬜ Не начато
+
+---
+
+## 🟢 Приоритет 4: Дополнительные возможности
+
+### 4.1. Аудит и логирование
 **Задачи:**
 - [ ] Создать сущность `AuditLog`
 - [ ] Добавить логирование всех изменений в `RoleAssignment`
@@ -137,7 +240,7 @@
 
 ---
 
-### 3.2. Массовые операции
+### 4.2. Массовые операции
 **Задачи:**
 - [ ] Массовое назначение ролей (несколько ролей сразу)
 - [ ] Массовый отзыв ролей
@@ -146,7 +249,7 @@
 
 ---
 
-### 3.3. API для внешних систем
+### 4.3. API для внешних систем
 **Задачи:**
 - [ ] Создать REST контроллер для интеграции
 - [ ] `POST /api/assignments` — создать назначение извне

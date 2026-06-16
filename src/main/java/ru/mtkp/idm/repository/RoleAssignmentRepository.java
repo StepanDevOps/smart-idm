@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ru.mtkp.idm.model.RoleAssignment;
@@ -23,48 +24,53 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, 
 	 * @return список назначений ролей
 	 */
 	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role WHERE ra.user.id = :userId")
-	List<RoleAssignment> findByUserId(Long userId);
+	List<RoleAssignment> findByUserId(@Param("userId") Long userId);
 
 	/**
-	 * Находит активные назначения ролей по пользователю.
+	 * Находит активные назначения ролей по пользователю (учитывая флаг isActive).
 	 *
 	 * @param userId идентификатор пользователя
 	 * @return список активных назначений ролей
 	 */
-	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role WHERE ra.user.id = :userId AND ra.effectiveTo IS NULL")
-	List<RoleAssignment> findByUserIdAndEffectiveToIsNull(Long userId);
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role " +
+			"WHERE ra.user.id = :userId AND (ra.isActive = true OR ra.isActive IS NULL)")
+	List<RoleAssignment> findByUserIdAndEffectiveToIsNull(@Param("userId") Long userId);
 
 	/**
-	 * Находит истёкшие назначения ролей (где effectiveTo < сегодня).
+	 * Находит истёкшие назначения ролей (где effectiveTo < сегодня и назначение активно).
 	 *
+	 * @param today текущая дата
 	 * @return список истёкших назначений ролей
 	 */
-	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role WHERE ra.effectiveTo IS NOT NULL AND ra.effectiveTo < :today")
-	List<RoleAssignment> findExpiredAssignments(LocalDate today);
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.role " +
+			"WHERE ra.effectiveTo IS NOT NULL AND ra.effectiveTo < :today AND (ra.isActive = true OR ra.isActive IS NULL)")
+	List<RoleAssignment> findExpiredAssignments(@Param("today") LocalDate today);
 
 	/**
-	 * Находит назначение с загрузкой пользователя и роли.
+	 * Находит назначение с загрузкой пользователя и роли по ID назначения.
 	 *
 	 * @param assignmentId идентификатор назначения
-	 * @дополнительно Optional с назначением
+	 * @return Optional с назначением ролей
 	 */
 	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role WHERE ra.id = :assignmentId")
-	Optional<RoleAssignment> findByIdWithUserAndRole(Integer assignmentId);
+	Optional<RoleAssignment> findByIdWithUserAndRole(@Param("assignmentId") Integer assignmentId);
 
 	/**
-	 * Находит пользователей с определённой ролью (активные назначения).
+	 * Находит пользователей с определённой ролью (активные назначения, учитывая флаг isActive).
 	 *
 	 * @param roleId идентификатор роли
-	 * @дополнительно список активных назначений с этой ролью
+	 * @return список активных назначений с этой ролью
 	 */
-	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role WHERE ra.role.id = :roleId AND ra.effectiveTo IS NULL")
-	List<RoleAssignment> findByRoleIdAndEffectiveToIsNull(Integer roleId);
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role " +
+			"WHERE ra.role.id = :roleId AND (ra.isActive = true OR ra.isActive IS NULL)")
+	List<RoleAssignment> findByRoleIdAndEffectiveToIsNull(@Param("roleId") Integer roleId);
 
 	/**
-	 * Находит все назначения с загрузкой пользователя и роли.
+	 * Находит все назначения с загрузкой пользователя и роли, отсортированные по дате создания.
 	 *
 	 * @return список всех назначений
 	 */
-	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role ORDER BY ra.createdAt DESC")
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role " +
+			"ORDER BY ra.createdAt DESC")
 	List<RoleAssignment> findAllWithUserAndRole();
 }

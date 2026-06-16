@@ -33,12 +33,24 @@
                         </div>
 
                         <div class="mb-3">
+                            <label class="form-label">Целевая система</label>
+                            <select id="systemSelect" class="form-select" onchange="filterRoles()">
+                                <option value="">Все системы (глобальные роли)</option>
+                                <option th:each="system : ${systems}"
+                                        th:value="${system.id}"
+                                        th:text="${system.name}">
+                                </option>
+                            </select>
+                            <small class="text-muted">Роли будут отфильтрованы по выбранной системе</small>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">Роль *</label>
-                            <select name="roleId" class="form-select" required>
+                            <select id="roleSelect" name="roleId" class="form-select" required>
                                 <option value="">Выберите роль</option>
                                 <option th:each="role : ${roles}"
                                         th:value="${role.id}"
-                                        th:text="${role.name} + (role.system != null ? ' (' + role.system.name + ')' : '')">
+                                        th:text="${role.name} + (role.system != null ? ' (' + role.system.name + ')' : ' (Глобальная)')">
                                 </option>
                             </select>
                         </div>
@@ -78,5 +90,58 @@
 </div>
 
 <div th:replace="~{components/layout :: scripts}"></div>
+
+<script>
+// Инициализация: если roleSelect пуст, но есть только один вариант — подсказка
+document.addEventListener('DOMContentLoaded', function () {
+    filterRoles();
+});
+
+/**
+ * Фильтрует роли на основе выбранной системы через AJAX.
+ */
+function filterRoles() {
+    var systemSelect = document.getElementById('systemSelect');
+    var roleSelect = document.getElementById('roleSelect');
+    var systemId = systemSelect.value;
+
+    // Очищаем текущие опции ролей (кроме первой)
+    roleSelect.innerHTML = '<option value="">Выберите роль</option>';
+
+    if (!systemId) {
+        // systemId пуст — грузим глобальные роли (controller использует -1 как null)
+        fetch('/role-assignments/roles/-1')
+            .then(function (response) { return response.json(); })
+            .then(function (roles) { populateRoles(roleSelect, roles); })
+            .catch(function () { /* fallback: оставить пустым */ });
+    } else {
+        fetch('/role-assignments/roles/' + systemId)
+            .then(function (response) { return response.json(); })
+            .then(function (roles) { populateRoles(roleSelect, roles); })
+            .catch(function () { /* fallback: оставить пустым */ });
+    }
+}
+
+/**
+ * Заполняет select опциями ролей.
+ */
+function populateRoles(select, roles) {
+    if (!roles || roles.length === 0) {
+        var opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Нет доступных ролей';
+        select.appendChild(opt);
+        return;
+    }
+
+    roles.forEach(function (role) {
+        var opt = document.createElement('option');
+        opt.value = role.id;
+        var systemLabel = role.system ? ' (' + role.system.name + ')' : ' (Глобальная)';
+        opt.textContent = role.name + systemLabel;
+        select.appendChild(opt);
+    });
+}
+</script>
 </body>
 </html>

@@ -37,7 +37,7 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 	 */
 	@Override
 	public RoleAssignment assignRoleToUser(Long userId, Integer roleId, String reason,
-										   LocalDate effectiveFrom, LocalDate effectiveTo) {
+	                                       LocalDate effectiveFrom, LocalDate effectiveTo) {
 		log.info("Назначение роли: userId={}, roleId={}, reason={}, effectiveFrom={}, effectiveTo={}",
 				userId, roleId, reason, effectiveFrom, effectiveTo);
 
@@ -58,14 +58,15 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 		if (effectiveFrom == null) {
 			effectiveFrom = LocalDate.now();
 		}
+		// Проверка дат оставим, чтобы не ломать логику создания, но отзовем ошибку БД
 		if (effectiveTo != null && !effectiveTo.isAfter(effectiveFrom)) {
-			throw new IllegalArgumentException("effectiveTo должно быть после effectiveFrom");
+			throw new IllegalArgumentException("effectiveTo должно быть позже effectiveFrom");
 		}
 
 		// Проверка: нет ли уже активного назначения этой роли
 		List<RoleAssignment> existingAssignments = roleAssignmentRepository.findByUserId(userId);
 		boolean hasActiveAssignment = existingAssignments.stream()
-				.anyMatch(a -> a.getRole().getId().equals(roleId) && a.getEffectiveTo() == null);
+				.anyMatch(a -> a.getRole().getId().equals(roleId) && (a.getEffectiveTo() == null || a.getEffectiveTo().isAfter(LocalDate.now())));
 
 		if (hasActiveAssignment) {
 			log.warn("У пользователя {} уже есть активное назначение роли {}", user.getLogin(), role.getName());
@@ -80,6 +81,7 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 				.effectiveFrom(effectiveFrom)
 				.effectiveTo(effectiveTo)
 				.assignmentReason(reason)
+				.isActive(true) // Инициализируем
 				.build();
 
 		RoleAssignment saved = roleAssignmentRepository.save(assignment);
@@ -99,19 +101,17 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 		RoleAssignment assignment = roleAssignmentRepository.findById(assignmentId)
 				.orElseThrow(() -> new IllegalArgumentException("Назначение не найдено: " + assignmentId));
 
-		// Устанавливаем effectiveTo на вчерашний день
-		LocalDate expiryDate = LocalDate.now().minusDays(1);
-
-		// Если уже истёкший, не трогаем
-		if (assignment.getEffectiveTo() != null && assignment.getEffectiveTo().isBefore(LocalDate.now())) {
-			log.warn("Назначение уже истёкшее: assignmentId={}, effectiveTo={}", assignmentId, assignment.getEffectiveTo());
+		// Если уже неактивно, ничего не делаем
+		if (assignment.getIsActive() != null && !assignment.getIsActive()) {
+			log.warn("Назначение уже отозвано: assignmentId={}", assignmentId);
 			return false;
 		}
 
-		assignment.setEffectiveTo(expiryDate);
+		// Отменяем назначение
+		assignment.setIsActive(false);
 		roleAssignmentRepository.save(assignment);
 
-		log.info("Назначение отозвано: assignmentId={}, effectiveTo={}", assignmentId, expiryDate);
+		log.info("Назначение отозвано: assignmentId={}", assignmentId);
 		return true;
 	}
 

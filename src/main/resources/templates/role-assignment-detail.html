@@ -64,15 +64,15 @@
             <!-- Статус назначения -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <i class="bi bi-flag" th:classappend="${assignment.effectiveTo == null} ? ' text-success' : ' text-muted'"></i>
+                    <i class="bi bi-flag" th:classappend="${assignment.isActive == null || assignment.isActive} ? ' text-success' : ' text-danger'"></i>
                     Статус
                 </div>
                 <div class="card-body">
-                    <div th:if="${assignment.effectiveTo == null}" class="alert alert-success mb-0">
+                    <div th:if="${assignment.isActive == null || assignment.isActive}" class="alert alert-success mb-0">
                         <i class="bi bi-check-circle"></i> Активное назначение
                     </div>
-                    <div th:if="${assignment.effectiveTo != null}" class="alert alert-secondary mb-0">
-                        <i class="bi bi-clock-history"></i> Истёкшее назначение (по: <span th:text="${#temporals.format(assignment.effectiveTo, 'dd.MM.yyyy')}"></span>)
+                    <div th:if="${assignment.isActive != null and !assignment.isActive}" class="alert alert-danger mb-0">
+                        <i class="bi bi-x-circle"></i> Отозванное назначение
                     </div>
                 </div>
             </div>
@@ -84,8 +84,8 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex gap-2">
-                        <form th:if="${assignment.effectiveTo == null}"
-                              th:action="@{/role-assignments/{id}(id=${assignment.id})}" 
+                        <form th:if="${assignment.isActive == null || assignment.isActive}"
+                              th:action="@{/role-assignments/{id}(id=${assignment.id})}"
                               method="post"
                               onsubmit="return confirm('Вы уверены, что хотите отозвать это назначение?');">
                             <input type="hidden" name="_method" value="DELETE"/>

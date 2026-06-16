@@ -32,6 +32,15 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
 	List<Role> findBySystemId(Integer systemId);
 
 	/**
+	 * Находит глобальные роли (без привязки к системе) и роли указанной системы.
+	 *
+	 * @param systemId идентификатор системы (если null, то только глобальные)
+	 * @return список ролей
+	 */
+	@Query("SELECT r FROM Role r WHERE r.system IS NULL OR r.system.id = :systemId ORDER BY r.name")
+	List<Role> findGlobalAndSystemRoles(Integer systemId);
+
+	/**
 	 * Находит все роли с загрузкой системы.
 	 *
 	 * @return список всех ролей

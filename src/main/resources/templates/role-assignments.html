@@ -31,6 +31,7 @@
                             <th>С</th>
                             <th>По</th>
                             <th>Причина</th>
+                            <th>Статус</th>
                             <th>Действия</th>
                         </tr>
                         </thead>
@@ -57,13 +58,17 @@
                             </td>
                             <td th:text="${assignment.assignmentReason != null ? assignment.assignmentReason : '—'}">Причина</td>
                             <td>
+                                <span th:if="${assignment.isActive == null || assignment.isActive}" class="badge bg-success">Активно</span>
+                                <span th:if="${assignment.isActive != null and !assignment.isActive}" class="badge bg-secondary">Отозвано</span>
+                            </td>
+                            <td>
                                 <div class="btn-group" role="group">
                                     <a th:href="@{/role-assignments/{id}(id=${assignment.id})}"
                                        class="btn btn-sm btn-outline-info" title="Детали">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <form th:if="${assignment.effectiveTo == null}"
-                                          th:action="@{/role-assignments/{id}(id=${assignment.id})}" 
+                                    <form th:if="${assignment.isActive == null || assignment.isActive}"
+                                          th:action="@{/role-assignments/{id}(id=${assignment.id})}"
                                           method="post"
                                           onsubmit="return confirm('Отозвать это назначение?');">
                                         <input type="hidden" name="_method" value="DELETE"/>

@@ -15,6 +15,7 @@ import ru.mtkp.idm.model.Role;
 import ru.mtkp.idm.model.RoleAssignment;
 import ru.mtkp.idm.model.TargetSystem;
 import ru.mtkp.idm.model.User;
+import ru.mtkp.idm.repository.RoleAssignmentRepository;
 import ru.mtkp.idm.repository.RoleRepository;
 import ru.mtkp.idm.repository.TargetSystemRepository;
 import ru.mtkp.idm.repository.UserRepository;
@@ -30,6 +31,7 @@ import ru.mtkp.idm.service.RoleAssignmentService;
 public class RoleAssignmentController {
 
 	private final RoleAssignmentService roleAssignmentService;
+	private final RoleAssignmentRepository roleAssignmentRepository;
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final TargetSystemRepository targetSystemRepository;
@@ -73,15 +75,27 @@ public class RoleAssignmentController {
 		log.info("Форма создания назначения");
 
 		List<User> users = userRepository.findAll();
-		List<Role> roles = roleRepository.findAllWithSystem();
 		List<TargetSystem> systems = targetSystemRepository.findAll();
 
+		// По умолчанию показываем глобальные роли (system = null)
+		List<Role> roles = roleRepository.findGlobalAndSystemRoles(null);
+
 		model.addAttribute("users", users);
-		model.addAttribute("roles", roles);
 		model.addAttribute("systems", systems);
+		model.addAttribute("roles", roles);
 		model.addAttribute("assignment", new RoleAssignmentDTO());
 		model.addAttribute("pageTitle", "Создать назначение роли");
 		return "role-assignment-form";
+	}
+
+	/**
+	 * Получение списка ролей для выбранной системы.
+	 */
+	@GetMapping("/roles/{systemId}")
+	@ResponseBody
+	public List<Role> getRolesBySystem(@PathVariable Integer systemId) {
+		// systemId == -1 или null означает "Глобальные роли"
+		return roleRepository.findGlobalAndSystemRoles(systemId == -1 ? null : systemId);
 	}
 
 	/**
@@ -141,24 +155,29 @@ public class RoleAssignmentController {
 			RoleAssignment assignment = roleAssignmentService.getAssignmentById(id)
 					.orElseThrow(() -> new IllegalArgumentException("Назначение не найдено: " + id));
 
+			LocalDate fromDate = assignment.getEffectiveFrom();
+			LocalDate toDate = assignment.getEffectiveTo();
+
+			if (effectiveFrom != null && !effectiveFrom.isEmpty()) {
+				fromDate = LocalDate.parse(effectiveFrom);
+			}
+			if (effectiveTo != null && !effectiveTo.isEmpty()) {
+				toDate = LocalDate.parse(effectiveTo);
+			}
+
+			// Валидация: даты
+			if (fromDate != null && toDate != null && !toDate.isAfter(fromDate)) {
+				throw new IllegalArgumentException("Дата окончания (effectiveTo) должна быть позже даты начала (effectiveFrom)");
+			}
+
 			// Обновляем поля
 			if (reason != null) {
 				assignment.setAssignmentReason(reason);
 			}
-			if (effectiveFrom != null && !effectiveFrom.isEmpty()) {
-				assignment.setEffectiveFrom(LocalDate.parse(effectiveFrom));
-			}
-			if (effectiveTo != null && !effectiveTo.isEmpty()) {
-				assignment.setEffectiveTo(LocalDate.parse(effectiveTo));
-			}
+			assignment.setEffectiveFrom(fromDate);
+			assignment.setEffectiveTo(toDate);
 
-			roleAssignmentService.assignRoleToUser(
-					assignment.getUser().getId(),
-					assignment.getRole().getId(),
-					reason,
-					assignment.getEffectiveFrom(),
-					assignment.getEffectiveTo()
-			);
+			roleAssignmentRepository.save(assignment);
 
 			redirectAttributes.addFlashAttribute("successMessage", "Назначение успешно обновлено");
 		} catch (Exception e) {

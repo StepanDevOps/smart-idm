@@ -54,6 +54,9 @@ public class RoleAssignment {
     @Column(name = "effective_to")
     private LocalDate effectiveTo;
 
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
     @Column(name = "assignment_reason")
     private String assignmentReason;
 
