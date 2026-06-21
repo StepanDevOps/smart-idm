@@ -20,6 +20,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+
 /**
  * Локальная учётная запись пользователя IDM.
  *
@@ -84,6 +87,11 @@ public class IdmUser {
     /** Дата и время смены пароля. */
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;
+
+    /** Связь с сотрудником (опционально 1:0..1). */
+    @OneToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     /**
      * Устанавливает служебные поля перед созданием записи.

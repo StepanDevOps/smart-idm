@@ -5,7 +5,6 @@ package ru.mtkp.idm.model;
  */
 public enum StepName {
     LINE_MANAGER,
-    SECURITY_OFFICER,
-    SYSTEM_OWNER
+    SECURITY_OFFICER
 }
 

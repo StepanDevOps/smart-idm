@@ -75,8 +75,9 @@ public class RequestServiceImpl implements RequestService {
 				.build();
 		request = requestRepository.save(request);
 
-		// Создание первого этапа согласования (линейный менеджер)
-		createApprovalStep(request, null, StepName.LINE_MANAGER, AppDecision.PENDING);
+		// Создание первого этапа согласования (линейный менеджер заявителя)
+		User lineManager = requestedFor.getManager();
+		createApprovalStep(request, lineManager, StepName.LINE_MANAGER, AppDecision.PENDING);
 
 		// Запись в аудит
 		auditService.logAction(requestor, "ACCESS_REQUEST_CREATED",
@@ -214,18 +215,21 @@ public class RequestServiceImpl implements RequestService {
 				.orElse(pendingSteps.getFirst());
 
 		// Если текущий этап был последним - завершаем
-		if (nextStep.getStepName() == StepName.SYSTEM_OWNER) {
-			log.info("Это последний этап согласования SYSTEM_OWNER для заявки #{}", request.getId());
+		if (nextStep.getStepName() == StepName.SECURITY_OFFICER) {
+			log.info("Это последний этап согласования SECURITY_OFFICER для заявки #{}", request.getId());
 			return RequestStatus.COMPLETED;
 		}
 
 		// Создать следующий этап
 		StepName nextStepName = getNextStepName(nextStep.getStepName());
-		createApprovalStep(request, null, nextStepName, AppDecision.PENDING);
-
-		log.info("Переход к следующему этапу: requestId={}, nextStep={}",
-				request.getId(), nextStepName);
-		return RequestStatus.APPROVED;
+		if (nextStepName != null) {
+			createApprovalStep(request, null, nextStepName, AppDecision.PENDING);
+			log.info("Переход к следующему этапу: requestId={}, nextStep={}",
+					request.getId(), nextStepName);
+			return RequestStatus.APPROVED;
+		} else {
+			return RequestStatus.COMPLETED;
+		}
 	}
 
 	// ==================== Вспомогательные методы ====================
@@ -242,14 +246,25 @@ public class RequestServiceImpl implements RequestService {
 
 	/**
 	 * Проверить права утверждающего на текущем этапе.
-	 * Упрощённая реализация - допускает любого аутентифицированного пользователя.
+	 *
+	 * LINE_MANAGER: только если является менеджером requestedFor
+	 * SECURITY_OFFICER: любой пользователь с ролью ADMIN
 	 */
 	private boolean canApprove(ApprovalStep step, User approver) {
-		// В реальной системе здесь должна быть проверка:
-		// - является ли approver менеджером requestedFor
-		// - имеет ли approver роль SECURITY_OFFICER для этапа SECURITY_OFFICER
-		// - является ли approver владельцем системы для этапа SYSTEM_OWNER
-		return true; // Упрощённая реализация для MVP
+		StepName stepName = step.getStepName();
+
+		if (stepName == StepName.LINE_MANAGER) {
+			// Линейный руководитель может согласовывать только заявки своих подчинённых
+			User requestedFor = step.getRequest().getRequestedFor();
+			return requestedFor.getManager() != null &&
+				   requestedFor.getManager().getId().equals(approver.getId());
+		} else if (stepName == StepName.SECURITY_OFFICER) {
+			// Администратор ИБ - это IdmUser с ролью ADMIN
+			// Упрощённая проверка: любой с ролью ADMIN (нужно добавить проверку через IdmUserRepository)
+			return true; // Заглушка, пока нет проверки IdmUser.role
+		}
+
+		return false;
 	}
 
 	/**
@@ -273,7 +288,6 @@ public class RequestServiceImpl implements RequestService {
 		return switch (stepName) {
 			case LINE_MANAGER -> 1;
 			case SECURITY_OFFICER -> 2;
-			case SYSTEM_OWNER -> 3;
 		};
 	}
 
@@ -283,8 +297,7 @@ public class RequestServiceImpl implements RequestService {
 	private StepName getNextStepName(StepName currentStep) {
 		return switch (currentStep) {
 			case LINE_MANAGER -> StepName.SECURITY_OFFICER;
-			case SECURITY_OFFICER -> StepName.SYSTEM_OWNER;
-			case SYSTEM_OWNER -> StepName.SYSTEM_OWNER; // Последний этап
+			case SECURITY_OFFICER -> null; // Последний этап
 		};
 	}
 
