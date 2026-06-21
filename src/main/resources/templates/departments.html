@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{components/layout :: head('Департаменты — Smart IDM')}"></head>
+<head th:replace="~{components/layout :: head('Departments — Smart IDM')}"></head>
 <body>
 <div class="d-flex vh-100">
     <aside th:replace="~{components/layout :: sidebar('departments')}"></aside>
@@ -10,9 +10,9 @@
 
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 th:text="${pageTitle}">Департаменты</h5>
+                <h5 th:text="${pageTitle}">Departments</h5>
                 <a th:href="@{/departments/new}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus-circle"></i> Создать департамент
+                    <i class="bi bi-plus-circle"></i> Create Department
                 </a>
             </div>
 
@@ -25,42 +25,41 @@
                         <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Код</th>
-                            <th>Название</th>
-                            <th>Родитель</th>
-                            <th>Пользователей</th>
-                            <th>Действия</th>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Parent</th>
+                            <th>Users</th>
+                            <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="dept : ${departments}">
                             <td th:text="${dept.id}">1</td>
                             <td><code th:text="${dept.code}">DEPT001</code></td>
-                            <td th:text="${dept.name}">Название</td>
+                            <td th:text="${dept.name}">Name</td>
                             <td>
-                                <span th:if="${dept.parentUnit != null}" th:text="${dept.parentUnit.name}">Родитель</span>
-                                <span th:if="${dept.parentUnit == null}" class="text-muted">— (корневой)</span>
+                                <span th:if="${dept.parentUnit != null}" th:text="${dept.parentUnit.name}">Parent</span>
+                                <span th:if="${dept.parentUnit == null}" class="text-muted">— (root)</span>
                             </td>
                             <td>
-                                <span th:if="${dept.users != null}" th:text="${#lists.size(dept.users)}">0</span>
-                                <span th:if="${dept.users == null}">0</span>
+                                <span th:text="${dept.userCount != null ? dept.userCount : 0}">0</span>
                             </td>
                             <td>
-                                <form th:if="${(dept.children == null or #lists.isEmpty(dept.children)) and (dept.users == null or #lists.isEmpty(dept.users))}"
+                                <form th:if="${!dept.hasChildren and (dept.userCount == null or dept.userCount == 0)}"
                                       th:action="@{/departments/{id}(id=${dept.id})}"
                                       method="post"
-                                      onsubmit="return confirm('Удалить этот департамент?');">
+                                      onsubmit="return confirm('Delete this department?');">
                                     <input type="hidden" name="_method" value="DELETE"/>
                                     <button class="btn btn-sm btn-outline-danger" type="submit">
-                                        <i class="bi bi-trash"></i> Удалить
+                                        <i class="bi bi-trash"></i> Delete
                                     </button>
                                 </form>
-                                <span th:if="${dept.children != null and !dept.children.isEmpty()}" class="text-muted small">Нельзя удалить (есть дети)</span>
-                                <span th:if="${dept.users != null and !dept.users.isEmpty()}" class="text-muted small">Нельзя удалить (есть сотрудники)</span>
+                                <span th:if="${dept.hasChildren}" class="text-muted small">Cannot delete (has children)</span>
+                                <span th:if="${dept.userCount != null and dept.userCount > 0}" class="text-muted small">Cannot delete (has users)</span>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(departments)}">
-                            <td colspan="6" class="text-center text-muted">Нет департаментов</td>
+                            <td colspan="6" class="text-center text-muted">No departments</td>
                         </tr>
                         </tbody>
                     </table>
