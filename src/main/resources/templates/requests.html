@@ -11,7 +11,10 @@
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 th:text="#{nav.requests}">Requests</h5>
-                <div class="btn-group">
+                <div>
+                    <a th:href="@{/access-requests/new}" class="btn btn-sm btn-primary me-2">
+                        <i class="bi bi-plus-circle"></i> Создать заявку
+                    </a>
                     <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.all}">All</button>
                     <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.pending}">Pending</button>
                     <button class="btn btn-outline-secondary btn-sm" th:text="#{tab.approved}">Approved</button>
@@ -39,18 +42,30 @@
                                 <div th:text="${r.requestor != null ? r.requestor.firstName + ' ' + r.requestor.lastName : '—'}">Ivanov</div>
                                 <div class="small mono text-muted" th:text="${r.requestor != null ? r.requestor.login : '—'}">ivanov</div>
                             </td>
-                            <td th:text="${r.role != null and r.role.system != null ? r.role.system.name : '—'}">DEFAULT</td>
-                            <td th:text="${r.status}">CREATED</td>
-                            <td th:text="${r.createdAt}">2026-06-07</td>
                             <td>
-                                <div class="btn-group" role="group">
+                                <div th:text="${r.role != null ? r.role.name : '—'}">Role</div>
+                                <div class="small text-muted" th:text="${r.role != null and r.role.system != null ? r.role.system.name : 'Глобальная'}">System</div>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${r.status.name() == 'CREATED' || r.status.name() == 'PENDING' ? 'bg-warning text-dark' :
+                                                       (r.status.name() == 'APPROVED' ? 'bg-success' :
+                                                       (r.status.name() == 'REJECTED' ? 'bg-danger' : 'bg-secondary'))}"
+                                      th:text="${r.status}">CREATED</span>
+                            </td>
+                            <td th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm')}">2026-06-07</td>
+                            <td>
+                                <div th:if="${r.status.name() == 'CREATED' || r.status.name() == 'PENDING'}" class="btn-group" role="group">
                                     <a th:href="@{'/requests/' + ${r.id} + '/approve'}" class="btn btn-sm btn-success">
-                                        Одобрить
+                                        <i class="bi bi-check"></i> Одобрить
                                     </a>
                                     <a th:href="@{'/requests/' + ${r.id} + '/reject'}" class="btn btn-sm btn-danger">
-                                        Отклонить
+                                        <i class="bi bi-x"></i> Отклонить
                                     </a>
                                 </div>
+                                <span th:if="${r.status.name() != 'CREATED' && r.status.name() != 'PENDING'}" class="text-muted small">
+                                    Заявка обработана
+                                </span>
                             </td>
                         </tr>
                         </tbody>

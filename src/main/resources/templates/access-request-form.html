@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Создать заявку — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('requests')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="${pageTitle}">Создать заявку на доступ</h5>
+                <a th:href="@{/requests}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/access-requests/create}" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Инициатор заявки *</label>
+                                    <select name="requestorId" class="form-select" required>
+                                        <option value="">Выберите инициатора</option>
+                                        <option th:each="user : ${users}"
+                                                th:value="${user.id}"
+                                                th:text="${user.lastName} + ' ' + ${user.firstName} + ' (' + ${user.login} + ')'"
+                                                th:selected="${requestor != null and requestor.id == user.id}">
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">Кто создаёт заявку</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Для кого *</label>
+                                    <select name="requestedForId" class="form-select" required>
+                                        <option value="">Выберите пользователя</option>
+                                        <option th:each="user : ${users}"
+                                                th:value="${user.id}"
+                                                th:text="${user.lastName} + ' ' + ${user.firstName} + ' (' + ${user.login} + ')'"
+                                                th:selected="${requestor != null and requestor.id == user.id}">
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">Кому предоставляется доступ</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">Целевая система</label>
+                            <select id="systemSelect" class="form-select" onchange="filterRoles()">
+                                <option value="">Выберите систему</option>
+                                <option th:each="system : ${systems}"
+                                        th:value="${system.name}"
+                                        th:text="${system.name}">
+                                </option>
+                            </select>
+                            <small class="text-muted">Система, к которой запрашивается доступ</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Роль *</label>
+                            <select id="roleSelect" name="roleId" class="form-select" required>
+                                <option value="">Сначала выберите систему</option>
+                                <option th:each="role : ${roles}"
+                                        th:value="${role.id}"
+                                        th:text="${role.name} + (role.system != null ? ' (' + role.system.name + ')' : ' (Глобальная)')">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Обоснование *</label>
+                            <textarea name="justification" class="form-control" rows="3" required
+                                      placeholder="Например: Должностные обязанности, участие в проекте..."></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Заявка будет отправлена на согласование линейному менеджеру.
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/requests}" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Отправить заявку
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{components/layout :: scripts}"></div>
+
+<script>
+function filterRoles() {
+    var systemSelect = document.getElementById('systemSelect');
+    var roleSelect = document.getElementById('roleSelect');
+    var systemName = systemSelect.value;
+
+    roleSelect.innerHTML = '<option value="">Выберите роль</option>';
+
+    var allOptions = roleSelect.querySelectorAll('option[data-system]');
+    
+    // Простой фильтр по тексту
+    for (var i = 1; i < roleSelect.options.length; i++) {
+        var opt = roleSelect.options[i];
+        if (systemName === '' || opt.text.includes(systemName) || opt.text.includes('Глобальная')) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    }
+}
+</script>
+</body>
+</html>
