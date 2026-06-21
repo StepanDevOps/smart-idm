@@ -38,8 +38,9 @@
                             <select class="form-select" id="roleId" name="roleId" required>
                                 <option value="">-- Выберите роль --</option>
                                 <option th:each="role : ${roles}"
+                                        th:with="sysLabel=${role.system != null ? ' (' + role.system.name + ')' : ''}"
                                         th:value="${role.id}"
-                                        th:text="${role.name} + (role.system != null ? ' (' + ${role.system.name} + ')' : '')">
+                                        th:text="${role.name} + ${sysLabel}">
                                 </option>
                             </select>
                         </div>

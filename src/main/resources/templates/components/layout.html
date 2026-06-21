@@ -38,6 +38,12 @@
                 </a>
             </li>
             <li>
+                <a th:href="@{/departments}" th:classappend="${active == 'departments'} ? ' active' : ''" class="nav-link">
+                    <i class="bi bi-building me-2"></i>
+                    <span th:text="#{nav.departments}">Departments</span>
+                </a>
+            </li>
+            <li>
                 <a th:href="@{/requests}" th:classappend="${active == 'requests'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-card-checklist me-2"></i>
                     <span th:text="#{nav.requests}">Requests</span>

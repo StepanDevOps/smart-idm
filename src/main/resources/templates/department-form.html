@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Create Department — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('departments')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="mb-3">
+                <a th:href="@{/departments}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to list
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Create Department</h5>
+
+                    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                    <form th:action="@{/departments}" method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required
+                                   placeholder="e.g. Development Department">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="code" class="form-label">Code *</label>
+                            <input type="text" class="form-control" id="code" name="code" required
+                                   placeholder="e.g. RD-001">
+                            <small class="text-muted">Unique department code</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="parentUnitId" class="form-label">Parent Department</label>
+                            <select class="form-select" id="parentUnitId" name="parentUnitId">
+                                <option value="">— None (root department) —</option>
+                                <option th:each="dept : ${departments}"
+                                        th:value="${dept.id}"
+                                        th:text="${dept.name}">
+                                </option>
+                            </select>
+                            <small class="text-muted">Leave empty for root department</small>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/departments}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>

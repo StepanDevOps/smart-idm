@@ -3,7 +3,7 @@
 # План развития бэкенда Smart IDM
 
 **Дата начала:** 14.06.2026  
-**Статус:** В разработке
+****Статус: Завершено**
 
 ---
 
@@ -126,18 +126,19 @@
 - [x] Реализовать выбор системы перед выбором роли (UI)
 - [x] Показывать только глобальные роли (без системы) или роли конкретной системы
 - [x] Добавить AJAX-эндпоинт `/role-assignments/roles/{systemId}` для фильтрации
-- [ ] Реализовать выбор департамента перед выбором роли (INDIRECT)
-- [ ] Показывать роли, доступные для департамента (через future `DepartmentRole` mapping)
-- [ ] Реализовать авто-назначение ролей при HR-событиях на основе орг-структуры
+- [x] Реализовать INDIRECT назначения через `DepartmentRoleController`
+- [x] Показывать роли, доступные для департамента (через `DepartmentRole` mapping)
+- [x] Авто-назначение ролей при HR-событиях на основе орг-структуры
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/controller/RoleAssignmentController.java`
 - `src/main/resources/templates/role-assignment-form.html`
 - `src/main/java/ru/mtkp/idm/repository/RoleRepository.java`
-- `src/main/java/ru/mtkp/idm/model/Department.java` *(future)*
-- `src/main/java/ru/mtkp/idm/repository/DepartmentRepository.java` *(future)*
+- `src/main/java/ru/mtkp/idm/model/Department.java`
+- `src/main/java/ru/mtkp/idm/repository/DepartmentRepository.java`
+- `src/main/java/ru/mtkp/idm/controller/DepartmentRoleController.java`
 
-**Статус:** 🟡 Частично выполнено (UI для DIRECT — ✅, INDIRECT — ⬜)
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -181,51 +182,37 @@ List<Map<String, Object>> findAllWithPath();
 - [x] Создать сущность `DepartmentRole` (многие-ко-многим: `Department` ↔ `Role`)
 - [x] Добавить в `RoleAssignment` тип назначения: `DIRECT` (через User) или `INDIRECT` (через Department)
 - [x] Обновить `RoleAssignmentValidator` для проверки INDIRECT назначений
-- [x] Добавить метод `getRolesByDepartment(departmentId)` в `DepartmentRoleService`
-
-**Файлы:**
-- `src/main/java/ru/mtkp/idm/model/DepartmentRole.java`
-- `src/main/java/ru/mtkp/idm/model/RoleAssignment.java`
-- `src/main/java/ru/mtkp/idm/repository/DepartmentRoleRepository.java`
-- `src/main/java/ru/mtkp/idm/service/DepartmentRoleService.java`
-- `src/main/java/ru/mtkp/idm/validator/RoleAssignmentValidator.java`
-
-**Статус:** ✅ Выполнено
-
----
-
-### 3.2. Mapping департамент → роли
-**Задачи:**
-- [ ] Создать сущность `DepartmentRole` (многие-ко-многим: `Department` ↔ `Role`)
-- [ ] Добавить в `RoleAssignment` тип назначения: `DIRECT` (через User) или `INDIRECT` (через Department)
-- [ ] Обновить `RoleAssignmentValidator` для проверки INDIRECT назначений
-- [ ] Добавить метод `getRolesByDepartment(departmentId)` в `RoleRepository`
+- [x] Добавить метод `getRolesByDepartment(departmentId)` в `RoleRepository`
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/model/DepartmentRole.java` *(new)*
 - `src/main/java/ru/mtkp/idm/model/RoleAssignment.java` *(update)*
 - `src/main/java/ru/mtkp/idm/repository/DepartmentRoleRepository.java` *(new)*
 
-**Статус:** ⬜ Не начато
-
----
-
-### 3.3. Интеграция с HR-событиями
-**Задачи:**
-- [x] При создании/изменении пользователя проверять его департамент
-- [x] Если департамент имеет mapped роли — создать `RoleAssignment` с типом `INDIRECT`
-- [x] Добавить `WorkflowEngineService` триггер на HR-события (`USER_CREATED`, `DEPARTMENT_CHANGED`)
-- [x] Логировать автоматические назначения в `SecurityLog`
-
-**Файлы:**
-- `src/main/java/ru/mtkp/idm/service/WorkflowEngineService.java`
-- `src/main/java/ru/mtkp/idm/service/IdentityService.java`
-- `src/main/java/ru/mtkp/idm/service/impl/IdentityServiceImpl.java`
-- `src/main/java/ru/mtkp/idm/model/SecurityLog.java`
-
 **Статус:** ✅ Выполнено
 
 ---
+
+### 3.3. Управление департаментами (NEW)
+**Задачи:**
+- [x] Создать `DepartmentController` для CRUD департаментов
+- [x] Создать шаблон `departments.html` для отображения списка
+- [x] Создать шаблон `department-form.html` для создания департаментов
+- [x] Добавить защиту от удаления с дочерними подразделениями и сотрудниками
+- [x] Добавить пункт меню "Департаменты" в навигацию
+- [x] Добавить локализацию
+
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/controller/DepartmentController.java`
+- `src/main/resources/templates/departments.html`
+- `src/main/resources/templates/department-form.html`
+- `src/main/resources/templates/components/layout.html`
+- `src/main/resources/messages_ru.properties`
+- `src/main/resources/messages_en.properties`
+
+**Статус:** ✅ Выполнено
+
+------
 
 ### 3.4. UI для управления INDIRECT назначениями
 **Задачи:**

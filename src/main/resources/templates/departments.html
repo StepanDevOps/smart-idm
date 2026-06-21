@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Департаменты — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('departments')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 th:text="${pageTitle}">Департаменты</h5>
+                <a th:href="@{/departments/new}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> Создать департамент
+                </a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Код</th>
+                            <th>Название</th>
+                            <th>Родитель</th>
+                            <th>Пользователей</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="dept : ${departments}">
+                            <td th:text="${dept.id}">1</td>
+                            <td><code th:text="${dept.code}">DEPT001</code></td>
+                            <td th:text="${dept.name}">Название</td>
+                            <td>
+                                <span th:if="${dept.parentUnit != null}" th:text="${dept.parentUnit.name}">Родитель</span>
+                                <span th:if="${dept.parentUnit == null}" class="text-muted">— (корневой)</span>
+                            </td>
+                            <td>
+                                <span th:if="${dept.users != null}" th:text="${#lists.size(dept.users)}">0</span>
+                                <span th:if="${dept.users == null}">0</span>
+                            </td>
+                            <td>
+                                <form th:if="${(dept.children == null or #lists.isEmpty(dept.children)) and (dept.users == null or #lists.isEmpty(dept.users))}"
+                                      th:action="@{/departments/{id}(id=${dept.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Удалить этот департамент?');">
+                                    <input type="hidden" name="_method" value="DELETE"/>
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                        <i class="bi bi-trash"></i> Удалить
+                                    </button>
+                                </form>
+                                <span th:if="${dept.children != null and !dept.children.isEmpty()}" class="text-muted small">Нельзя удалить (есть дети)</span>
+                                <span th:if="${dept.users != null and !dept.users.isEmpty()}" class="text-muted small">Нельзя удалить (есть сотрудники)</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(departments)}">
+                            <td colspan="6" class="text-center text-muted">Нет департаментов</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>
