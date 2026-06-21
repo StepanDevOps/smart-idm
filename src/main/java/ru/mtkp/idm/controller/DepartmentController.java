@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.mtkp.idm.model.Department;
 import ru.mtkp.idm.repository.DepartmentRepository;
+import ru.mtkp.idm.service.AuditService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class DepartmentController {
 
     private final DepartmentRepository departmentRepository;
+    private final AuditService auditService;
 
     /**
      * Список всех департаментов.
@@ -93,6 +95,10 @@ public class DepartmentController {
             }
 
             departmentRepository.save(department);
+
+            auditService.logAction(null, "DEPARTMENT_CREATED",
+                    "Создан департамент: " + name + " (код: " + code + ")");
+
             redirectAttributes.addFlashAttribute("successMessage", "Department created successfully");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -127,6 +133,10 @@ public class DepartmentController {
             }
 
             departmentRepository.deleteById(id);
+
+            auditService.logAction(null, "DEPARTMENT_DELETED",
+                    "Удалён департамент: " + department.getName() + " (код: " + department.getCode() + ")");
+
             redirectAttributes.addFlashAttribute("successMessage", "Department deleted successfully");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

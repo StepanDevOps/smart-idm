@@ -11,12 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ru.mtkp.idm.model.Department;
 import ru.mtkp.idm.model.RoleAssignment;
-import ru.mtkp.idm.model.SecurityLog;
 import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.model.UserStatus;
 import ru.mtkp.idm.repository.DepartmentRepository;
-import ru.mtkp.idm.repository.SecurityLogRepository;
 import ru.mtkp.idm.repository.UserRepository;
+import ru.mtkp.idm.service.AuditService;
 import ru.mtkp.idm.service.DepartmentRoleService;
 import ru.mtkp.idm.service.IdentityService;
 import ru.mtkp.idm.service.RoleAssignmentService;
@@ -32,10 +31,10 @@ import ru.mtkp.idm.service.RoleAssignmentService;
 public class IdentityServiceImpl implements IdentityService {
 
 	private final UserRepository userRepository;
-	private final SecurityLogRepository securityLogRepository;
 	private final DepartmentRoleService departmentRoleService;
 	private final RoleAssignmentService roleAssignmentService;
 	private final DepartmentRepository departmentRepository;
+	private final AuditService auditService;
 
 	/**
 	 * Основная подпрограмма обработки кадрового события (согласно рис. 8.2).
@@ -50,7 +49,7 @@ public class IdentityServiceImpl implements IdentityService {
 	public boolean processLifecycleEvent(String eventType, User user, String details) {
 		if (user == null) {
 			log.error("Пользователь не найден для обработки кадрового события");
-			writeAuditLog(null, "HR_EVENT_ERROR", "Пользователь не найден.");
+			auditService.logAction(null, "HR_EVENT_ERROR", "Пользователь не найден.");
 			return false;
 		}
 
@@ -73,14 +72,14 @@ public class IdentityServiceImpl implements IdentityService {
 			success = processLeaver(user, details);
 		} else {
 			log.warn("Неопознанный тип кадрового события: {}", eventType);
-			writeAuditLog(user, "HR_EVENT_UNKNOWN", "Неопознанный тип события: " + eventType);
+			auditService.logAction(user, "HR_EVENT_UNKNOWN", "Неопознанный тип события: " + eventType);
 			return false;
 		}
 
 		// Запись аудита после успешной обработки
 		if (success) {
 			String auditMessage = "Кадровое событие " + eventType + " обработано для пользователя " + user.getLogin();
-			writeAuditLog(user, "HR_EVENT_SUCCESS", auditMessage);
+			auditService.logAction(user, "HR_EVENT_SUCCESS", auditMessage);
 		}
 
 		log.info("processLifecycleEvent завершена: success={}, userId={}", success, user.getId());
@@ -193,29 +192,6 @@ public class IdentityServiceImpl implements IdentityService {
 		}
 
 		return isSoftDeleted;
-	}
-
-	/**
-	 * Запись события в журнал аудита безопасности (security_logs).
-	 *
-	 * @param user пользователь, к которому относится событие
-	 * @param eventType тип события
-	 * @param description описание события
-	 */
-	private void writeAuditLog(User user, String eventType, String description) {
-		try {
-			SecurityLog logEntry = SecurityLog.builder()
-					.eventTime(LocalDateTime.now())
-					.user(user)
-					.eventType(eventType)
-					.description(description)
-					.build();
-			securityLogRepository.save(logEntry);
-			log.debug("Аудит записан: type={}, userId={}, desc={}", eventType,
-					user != null ? user.getId() : null, description);
-		} catch (Exception e) {
-			log.error("Ошибка при записи в audit log: {}", e.getMessage());
-		}
 	}
 }
 

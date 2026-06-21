@@ -14,15 +14,13 @@ import ru.mtkp.idm.model.ApprovalStep;
 import ru.mtkp.idm.model.Request;
 import ru.mtkp.idm.model.RequestStatus;
 import ru.mtkp.idm.model.Role;
-import ru.mtkp.idm.model.SecurityLog;
 import ru.mtkp.idm.model.StepName;
 import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.repository.ApprovalStepRepository;
 import ru.mtkp.idm.repository.RequestRepository;
 import ru.mtkp.idm.repository.RoleRepository;
-import ru.mtkp.idm.repository.SecurityLogRepository;
 import ru.mtkp.idm.repository.UserRepository;
-import ru.mtkp.idm.service.ProvisioningService;
+import ru.mtkp.idm.service.AuditService;
 import ru.mtkp.idm.service.RequestService;
 
 /**
@@ -39,8 +37,8 @@ public class RequestServiceImpl implements RequestService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final ApprovalStepRepository approvalStepRepository;
-	private final SecurityLogRepository securityLogRepository;
 	private final ProvisioningServiceImpl provisioningService;
+	private final AuditService auditService;
 
 	/**
 	 * Создаёт заявку на доступ и инициирует workflow согласования.
@@ -81,7 +79,7 @@ public class RequestServiceImpl implements RequestService {
 		createApprovalStep(request, null, StepName.LINE_MANAGER, AppDecision.PENDING);
 
 		// Запись в аудит
-		writeAuditLog(requestor, "ACCESS_REQUEST_CREATED",
+		auditService.logAction(requestor, "ACCESS_REQUEST_CREATED",
 				"Создана заявка #" + request.getId() + " на роль " + roleName);
 
 		log.info("Заявка создана: id={}, status={}", request.getId(), request.getStatus());
@@ -121,7 +119,7 @@ public class RequestServiceImpl implements RequestService {
 		Optional<ApprovalStep> currentStepOpt = findActiveApprovalStep(request);
 		if (currentStepOpt.isEmpty()) {
 			log.warn("Активный этап согласования не найден для заявки {}", requestId);
-			writeAuditLog(approver, "REQUEST_STEP_ERROR",
+			auditService.logAction(approver, "REQUEST_STEP_ERROR",
 					"Активный этап не найден для заявки #" + requestId);
 			return false;
 		}
@@ -132,7 +130,7 @@ public class RequestServiceImpl implements RequestService {
 		if (!canApprove(currentStep, approver)) {
 			log.warn("Пользователь {} не имеет прав для утверждения заявки {} на этапе {}",
 					approver.getLogin(), requestId, currentStep.getStepName());
-			writeAuditLog(approver, "REQUEST_STEP_DENIED",
+			auditService.logAction(approver, "REQUEST_STEP_DENIED",
 					"Отказ в правах на утверждение заявки #" + requestId);
 			return false;
 		}
@@ -154,7 +152,7 @@ public class RequestServiceImpl implements RequestService {
 			request.setResolvedAt(LocalDateTime.now());
 			requestRepository.save(request);
 
-			writeAuditLog(approver, "REQUEST_REJECTED",
+			auditService.logAction(approver, "REQUEST_REJECTED",
 					"Заявка #" + requestId + " отклонена на этапе " + currentStep.getStepName());
 			log.info("Заявка #{} отклонена", requestId);
 			return true;
@@ -169,10 +167,10 @@ public class RequestServiceImpl implements RequestService {
 			log.info("Все этапы согласования пройдены, запуск provisioning для заявки #{}", requestId);
 			executeProvisioning(request);
 			request.setResolvedAt(LocalDateTime.now());
-			writeAuditLog(approver, "REQUEST_COMPLETED",
+			auditService.logAction(approver, "REQUEST_COMPLETED",
 					"Заявка #" + requestId + " завершена, provisioning выполнен");
 		} else {
-			writeAuditLog(approver, "REQUEST_STEP_APPROVED",
+			auditService.logAction(approver, "REQUEST_STEP_APPROVED",
 					"Заявка #" + requestId + " одобрена на этапе " + currentStep.getStepName() +
 							", переход к этапу " + nextStatus);
 		}
@@ -305,24 +303,5 @@ public class RequestServiceImpl implements RequestService {
 
 		provisioningService.createAccount(user, targetSystem, roleName);
 		provisioningService.completeRequest(request.getId());
-	}
-
-	/**
-	 * Запись события в журнал аудита безопасности.
-	 */
-	private void writeAuditLog(User user, String eventType, String description) {
-		try {
-			SecurityLog logEntry = SecurityLog.builder()
-					.eventTime(LocalDateTime.now())
-					.user(user)
-					.eventType(eventType)
-					.description(description)
-					.build();
-			securityLogRepository.save(logEntry);
-			log.debug("Аудит записан: type={}, userId={}, desc={}", eventType,
-					user.getId(), description);
-		} catch (Exception e) {
-			log.error("Ошибка при записи в audit log: {}", e.getMessage());
-		}
 	}
 }
