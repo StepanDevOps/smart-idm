@@ -12,6 +12,7 @@ import ru.mtkp.idm.model.DepartmentRole;
 import ru.mtkp.idm.model.Role;
 import ru.mtkp.idm.repository.DepartmentRepository;
 import ru.mtkp.idm.repository.RoleRepository;
+import ru.mtkp.idm.service.AuditService;
 import ru.mtkp.idm.service.DepartmentRoleService;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class DepartmentRoleController {
     private final DepartmentRoleService departmentRoleService;
     private final DepartmentRepository departmentRepository;
     private final RoleRepository roleRepository;
+    private final AuditService auditService;
 
     /**
      * Список всех связей Department↔Role.
@@ -72,6 +74,16 @@ public class DepartmentRoleController {
 
         try {
             departmentRoleService.createAssignment(departmentId, roleId);
+
+            // Получаем информацию для аудита
+            Department dept = departmentRepository.findById(departmentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Департамент не найден: " + departmentId));
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new IllegalArgumentException("Роль не найдена: " + roleId));
+
+            auditService.logAction(null, "INDIRECT_ASSIGNMENT_CREATED",
+                    "INDIRECT роль " + role.getName() + " назначена для департамента " + dept.getName());
+
             redirectAttributes.addFlashAttribute("successMessage",
                     "Связь успешно создана: департамент " + departmentId + ", роль " + roleId);
         } catch (IllegalArgumentException e) {
@@ -90,8 +102,17 @@ public class DepartmentRoleController {
         log.info("Удаление связи: id={}", id);
 
         try {
+            // Получаем информацию для аудита перед удалением
+            DepartmentRole dr = departmentRoleService.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Связь не найдена: " + id));
+
+            String deptName = dr.getDepartment() != null ? dr.getDepartment().getName() : "unknown";
+            String roleName = dr.getRole() != null ? dr.getRole().getName() : "unknown";
+
             boolean deleted = departmentRoleService.deleteAssignment(id);
             if (deleted) {
+                auditService.logAction(null, "INDIRECT_ASSIGNMENT_DELETED",
+                        "Удалена INDIRECT связь: департамент " + deptName + ", роль " + roleName);
                 redirectAttributes.addFlashAttribute("successMessage", "Связь успешно удалена");
             } else {
                 redirectAttributes.addFlashAttribute("errorMessage", "Связь не найдена");

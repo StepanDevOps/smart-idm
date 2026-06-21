@@ -18,6 +18,7 @@ import ru.mtkp.idm.model.RoleType;
 import ru.mtkp.idm.model.TargetSystem;
 import ru.mtkp.idm.repository.RoleRepository;
 import ru.mtkp.idm.repository.TargetSystemRepository;
+import ru.mtkp.idm.service.AuditService;
 
 /**
  * Контроллер управления ролями.
@@ -30,6 +31,7 @@ public class RoleController {
 
     private final RoleRepository roleRepository;
     private final TargetSystemRepository targetSystemRepository;
+    private final AuditService auditService;
 
     /**
      * Список всех ролей.
@@ -100,6 +102,9 @@ public class RoleController {
         }
 
         roleRepository.save(role);
+
+        auditService.logAction(null, "ROLE_CREATED",
+                "Создана роль: " + name + (systemId != null ? " (система ID=" + systemId + ")" : " (глобальная)"));
 
         redirectAttributes.addFlashAttribute("successMessage", "Роль \"" + name + "\" успешно создана");
         return "redirect:/roles";
@@ -173,6 +178,10 @@ public class RoleController {
                 .orElseThrow(() -> new IllegalArgumentException("Роль не найдена: " + id));
 
         String roleName = role.getName();
+
+        auditService.logAction(null, "ROLE_DELETED",
+                "Удалена роль: " + roleName);
+
         roleRepository.delete(role);
 
         redirectAttributes.addFlashAttribute("successMessage", "Роль \"" + roleName + "\" успешно удалена");

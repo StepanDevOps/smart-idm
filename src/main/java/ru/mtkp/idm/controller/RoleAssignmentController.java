@@ -21,6 +21,7 @@ import ru.mtkp.idm.repository.RoleAssignmentRepository;
 import ru.mtkp.idm.repository.RoleRepository;
 import ru.mtkp.idm.repository.TargetSystemRepository;
 import ru.mtkp.idm.repository.UserRepository;
+import ru.mtkp.idm.service.AuditService;
 import ru.mtkp.idm.service.DepartmentRoleService;
 import ru.mtkp.idm.service.RoleAssignmentService;
 
@@ -40,6 +41,7 @@ public class RoleAssignmentController {
     private final TargetSystemRepository targetSystemRepository;
     private final DepartmentRepository departmentRepository;
     private final DepartmentRoleService departmentRoleService;
+    private final AuditService auditService;
 
 	/**
 	 * Список всех назначений ролей.
@@ -145,12 +147,27 @@ public class RoleAssignmentController {
 			RoleAssignment assignment = roleAssignmentService.assignRoleToUser(
 					userId, roleId, reason, fromDate, toDate);
 
+			// Получаем информацию для аудита
+			User user = userRepository.findById(userId)
+					.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
+			Role role = roleRepository.findById(roleId)
+					.orElseThrow(() -> new IllegalArgumentException("Роль не найдена: " + roleId));
+
 			// Если указан departmentId — это INDIRECT назначение
 			if (departmentId != null) {
-				assignment.setDepartment(departmentRepository.findById(departmentId)
-						.orElseThrow(() -> new IllegalArgumentException("Департамент не найден: " + departmentId)));
+				Department dept = departmentRepository.findById(departmentId)
+						.orElseThrow(() -> new IllegalArgumentException("Департамент не найден: " + departmentId));
+				assignment.setDepartment(dept);
 				assignment.setAssignmentType(ru.mtkp.idm.model.AssignType.INDIRECT);
 				roleAssignmentRepository.save(assignment);
+
+				auditService.logAction(null, "INDIRECT_ASSIGNMENT_CREATED",
+						"INDIRECT роль " + role.getName() + " назначена для департамента " + dept.getName() +
+								" (пользователь: " + user.getLogin() + ")");
+			} else {
+				auditService.logAction(null, "ROLE_ASSIGNMENT_CREATED",
+						"Назначена роль " + role.getName() + " пользователю " + user.getLogin() +
+								" (причина: " + (reason != null ? reason : "не указана") + ")");
 			}
 
 			redirectAttributes.addFlashAttribute("successMessage",
@@ -222,8 +239,18 @@ public class RoleAssignmentController {
 		log.info("Отзыв назначения: id={}", id);
 
 		try {
+			// Получаем информацию для аудита перед отзывом
+			RoleAssignment assignment = roleAssignmentRepository.findById(id)
+					.orElseThrow(() -> new IllegalArgumentException("Назначение не найдено: " + id));
+
+			String roleName = assignment.getRole() != null ? assignment.getRole().getName() : "unknown";
+			String userLogin = assignment.getUser() != null ? assignment.getUser().getLogin() : "unknown";
+
 			boolean revoked = roleAssignmentService.revokeRoleAssignment(id);
+
 			if (revoked) {
+				auditService.logAction(null, "ROLE_ASSIGNMENT_REVOKED",
+						"Отозвана роль " + roleName + " у пользователя " + userLogin);
 				redirectAttributes.addFlashAttribute("successMessage", "Назначение успешно отозвано");
 			} else {
 				redirectAttributes.addFlashAttribute("errorMessage", "Назначение уже истекло или не найдено");
