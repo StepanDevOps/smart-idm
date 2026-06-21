@@ -29,8 +29,11 @@ mvn test
 # Конкретный тест
 mvn test -Dtest=ProvisioningServiceImplTest
 
-# Отчёт о покрытии
+# Отчёт о покрытии (требуется плагин jacoco-maven-plugin)
 mvn test jacoco:report
+
+# Открыть отчёт (Windows)
+start target\site\jacoco\index.html
 ```
 
 ---
