@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{components/layout :: head('Создать связь департамента с ролью — Smart IDM')}"></head>
+<body>
+<div class="d-flex vh-100">
+    <aside th:replace="~{components/layout :: sidebar('department-roles')}"></aside>
+
+    <main class="flex-grow-1 d-flex flex-column">
+        <div th:replace="~{components/layout :: header}"></div>
+
+        <div class="container py-4">
+            <div class="mb-3">
+                <a th:href="@{/department-roles}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад к списку
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Создать связь департамента с ролью</h5>
+
+                    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                    <form th:action="@{/department-roles}" method="post">
+                        <div class="mb-3">
+                            <label for="departmentId" class="form-label">Департамент</label>
+                            <select class="form-select" id="departmentId" name="departmentId" required>
+                                <option value="">-- Выберите департамент --</option>
+                                <option th:each="dept : ${departments}"
+                                        th:value="${dept.id}"
+                                        th:text="${dept.name}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="roleId" class="form-label">Роль</label>
+                            <select class="form-select" id="roleId" name="roleId" required>
+                                <option value="">-- Выберите роль --</option>
+                                <option th:each="role : ${roles}"
+                                        th:value="${role.id}"
+                                        th:text="${role.name} + (role.system != null ? ' (' + ${role.system.name} + ')' : '')">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Информация</label>
+                            <div class="text-muted small">
+                                После создания этой связи все сотрудники выбранного департамента
+                                (и его дочерних департаментов) автоматически получат указанную роль
+                                при HR-событии (приём или перемещение).
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Создать связь
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div th:replace="~{components/layout :: scripts}"></div>
+</body>
+</html>

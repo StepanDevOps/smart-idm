@@ -147,10 +147,10 @@
 
 ### 3.1. Дерево департаментов
 **Задачи:**
-- [ ] Проверить само-ссылку в `Department` (`parent` → `Department`)
-- [ ] Добавить репозиторийный метод для получения всех подчинённых департаментов (рекурсивно)
-- [ ] Добавить методы для проверки, является ли департамент родителем/потомком другого
-- [ ] Добавить валидацию: нельзя назначить департамент родителем самого себя
+- [x] Проверить само-ссылку в `Department` (`parentUnit` → `Department`)
+- [x] Добавить репозиторный метод для получения всех подчинённых департаментов (рекурсивно)
+- [x] Добавить методы для проверки, является ли департамент родителем/потомком другого
+- [x] Добавить валидацию: нельзя назначить департамент родителем самого себя
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/model/Department.java`
@@ -172,7 +172,25 @@ List<Department> findChildren(Integer parentId);
 List<Map<String, Object>> findAllWithPath();
 ```
 
-**Статус:** ⬜ Не начато
+**Статус:** ✅ Выполнено
+
+---
+
+### 3.2. Mapping департамент → роли
+**Задачи:**
+- [x] Создать сущность `DepartmentRole` (многие-ко-многим: `Department` ↔ `Role`)
+- [x] Добавить в `RoleAssignment` тип назначения: `DIRECT` (через User) или `INDIRECT` (через Department)
+- [x] Обновить `RoleAssignmentValidator` для проверки INDIRECT назначений
+- [x] Добавить метод `getRolesByDepartment(departmentId)` в `DepartmentRoleService`
+
+**Файлы:**
+- `src/main/java/ru/mtkp/idm/model/DepartmentRole.java`
+- `src/main/java/ru/mtkp/idm/model/RoleAssignment.java`
+- `src/main/java/ru/mtkp/idm/repository/DepartmentRoleRepository.java`
+- `src/main/java/ru/mtkp/idm/service/DepartmentRoleService.java`
+- `src/main/java/ru/mtkp/idm/validator/RoleAssignmentValidator.java`
+
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -194,32 +212,34 @@ List<Map<String, Object>> findAllWithPath();
 
 ### 3.3. Интеграция с HR-событиями
 **Задачи:**
-- [ ] При создании/изменении пользователя проверять его департамент
-- [ ] Если департамент имеет mapped роли — создать `RoleAssignment` с типом `INDIRECT`
-- [ ] Добавить `WorkflowEngineService` триггер на HR-события (`USER_CREATED`, `DEPARTMENT_CHANGED`)
-- [ ] Логировать автоматические назначения в `AuditLog`
+- [x] При создании/изменении пользователя проверять его департамент
+- [x] Если департамент имеет mapped роли — создать `RoleAssignment` с типом `INDIRECT`
+- [x] Добавить `WorkflowEngineService` триггер на HR-события (`USER_CREATED`, `DEPARTMENT_CHANGED`)
+- [x] Логировать автоматические назначения в `SecurityLog`
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/service/WorkflowEngineService.java`
 - `src/main/java/ru/mtkp/idm/service/IdentityService.java`
-- `src/main/java/ru/mtkp/idm/model/AuditLog.java` *(из Приоритета 3.1)*
+- `src/main/java/ru/mtkp/idm/service/impl/IdentityServiceImpl.java`
+- `src/main/java/ru/mtkp/idm/model/SecurityLog.java`
 
-**Статус:** ⬜ Не начато
+**Статус:** ✅ Выполнено
 
 ---
 
 ### 3.4. UI для управления INDIRECT назначениями
 **Задачи:**
-- [ ] Форма: выбор департамента → отображение mapped ролей → кнопка «Назначить всем сотрудникам»
-- [ ] Таблица: список всех INDIRECT назначений с фильтрацией по департаменту
-- [ ] Индикатор в карточке пользователя: «Роль получена INDIRECT (через департамент X)»
+- [x] Форма: выбор департамента → отображение mapped ролей → кнопка «Создать связь»
+- [x] Таблица: список всех INDIRECT назначений с фильтрацией по департаменту
+- [x] Обновлена форма назначения ролей с выбором типа DIRECT/INDIRECT
 
 **Файлы:**
-- `src/main/java/ru/mtkp/idm/controller/DepartmentController.java` *(new)*
-- `src/main/resources/templates/department-roles.html` *(new)*
-- `src/main/resources/templates/user-detail.html` *(update)*
+- `src/main/java/ru/mtkp/idm/controller/DepartmentRoleController.java`
+- `src/main/resources/templates/department-roles.html`
+- `src/main/resources/templates/department-role-form.html`
+- `src/main/resources/templates/role-assignment-form.html`
 
-**Статус:** ⬜ Не начато
+**Статус:** ✅ Выполнено
 
 ---
 

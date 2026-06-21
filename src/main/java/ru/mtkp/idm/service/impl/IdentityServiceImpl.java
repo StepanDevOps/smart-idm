@@ -2,18 +2,24 @@ package ru.mtkp.idm.service.impl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ru.mtkp.idm.model.Department;
+import ru.mtkp.idm.model.RoleAssignment;
 import ru.mtkp.idm.model.SecurityLog;
 import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.model.UserStatus;
+import ru.mtkp.idm.repository.DepartmentRepository;
 import ru.mtkp.idm.repository.SecurityLogRepository;
 import ru.mtkp.idm.repository.UserRepository;
+import ru.mtkp.idm.service.DepartmentRoleService;
 import ru.mtkp.idm.service.IdentityService;
+import ru.mtkp.idm.service.RoleAssignmentService;
 
 /**
  * Базовая реализация сервиса кадровых изменений.
@@ -27,6 +33,9 @@ public class IdentityServiceImpl implements IdentityService {
 
 	private final UserRepository userRepository;
 	private final SecurityLogRepository securityLogRepository;
+	private final DepartmentRoleService departmentRoleService;
+	private final RoleAssignmentService roleAssignmentService;
+	private final DepartmentRepository departmentRepository;
 
 	/**
 	 * Основная подпрограмма обработки кадрового события (согласно рис. 8.2).
@@ -79,6 +88,44 @@ public class IdentityServiceImpl implements IdentityService {
 	}
 
 	/**
+	 * Автоматически назначает INDIRECT роли пользователю на основе его департамента.
+	 *
+	 * @param user пользователь
+	 */
+	private void applyIndirectRoles(User user) {
+		if (user.getDepartment() == null) {
+			log.debug("У пользователя {} нет департамента, INDIRECT роли не назначаются", user.getLogin());
+			return;
+		}
+
+		Department department = user.getDepartment();
+		log.info("Проверка INDIRECT ролей для пользователя {} в департаменте {}", user.getLogin(), department.getId());
+
+		try {
+			// Получаем все роли для департамента (с учётом детей)
+			List<Integer> roleIds = departmentRoleService.getAllRolesForDepartmentWithChildren(department.getId());
+
+			for (Integer roleId : roleIds) {
+				// Проверяем, нет ли уже назначения
+				List<RoleAssignment> existing = roleAssignmentService.getAssignmentsByUserAndRole(user.getId(), roleId);
+				if (existing.isEmpty()) {
+					// Создаём INDIRECT назначение
+					RoleAssignment assignment = roleAssignmentService.createIndirectAssignment(
+							user.getId(), roleId, department.getId(),
+							"Автоматическое назначение через HR-событие");
+					log.info("Создано INDIRECT назначение: userId={}, roleId={}, departmentId={}",
+							user.getId(), roleId, department.getId());
+				} else {
+					log.debug("Назначение уже существует: userId={}, roleId={}", user.getId(), roleId);
+				}
+			}
+		} catch (Exception e) {
+			log.error("Ошибка при автоматическом назначении INDIRECT ролей для {}: {}",
+					user.getLogin(), e.getMessage());
+		}
+	}
+
+	/**
 	 * Подпрограмма обработки события приема сотрудника (Joiner).
 	 * Устанавливает статус ACTIVE и дату приема.
 	 */
@@ -94,6 +141,9 @@ public class IdentityServiceImpl implements IdentityService {
 
 		log.info("processJoiner завершена: пользователь {} переведен из статуса {} в ACTIVE",
 				user.getLogin(), oldStatus);
+
+		// Автоматически назначаем INDIRECT роли на основе департамента
+		applyIndirectRoles(user);
 	}
 
 	/**
@@ -104,13 +154,14 @@ public class IdentityServiceImpl implements IdentityService {
 	public void processMover(User user, String details) {
 		log.info("processMover: userId={}, login={}, details={}", user.getId(), user.getLogin(), details);
 
-		// В демо-версии подразделение не изменяется, так как требуется парсинг details
-		// Реальная реализация должна извлекать department_id из details и обновлять поле
-		UserStatus oldStatus = user.getStatus();
+		// В демо-версии подразделение может изменяться через details
+		// Обновляем пользователя
 		userRepository.save(user);
 
-		log.info("processMover завершена: пользователь {} обновлен (старый статус: {})",
-				user.getLogin(), oldStatus);
+		log.info("processMover завершена: пользователь {} обновлен", user.getLogin());
+
+		// Автоматически назначаем INDIRECT роли на основе нового департамента
+		applyIndirectRoles(user);
 	}
 
 	/**

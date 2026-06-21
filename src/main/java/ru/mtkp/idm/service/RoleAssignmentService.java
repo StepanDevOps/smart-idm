@@ -25,6 +25,26 @@ public interface RoleAssignmentService {
 	RoleAssignment assignRoleToUser(Long userId, Integer roleId, String reason, LocalDate effectiveFrom, LocalDate effectiveTo);
 
 	/**
+	 * Создает INDIRECT назначение через департамент.
+	 *
+	 * @param userId идентификатор пользователя
+	 * @param roleId идентификатор роли
+	 * @param departmentId идентификатор департамента
+	 * @param reason причина назначения
+	 * @return созданное назначение
+	 */
+	RoleAssignment createIndirectAssignment(Long userId, Integer roleId, Integer departmentId, String reason);
+
+	/**
+	 * Получает назначения по userId и roleId.
+	 *
+	 * @param userId идентификатор пользователя
+	 * @param roleId идентификатор роли
+	 * @return список назначений
+	 */
+	List<RoleAssignment> getAssignmentsByUserAndRole(Long userId, Integer roleId);
+
+	/**
 	 * Отзывает назначение роли по идентификатору.
 	 * Устанавливает effectiveTo на вчерашний день.
 	 *

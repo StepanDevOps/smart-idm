@@ -56,6 +56,12 @@
                 </a>
             </li>
             <li>
+                <a th:href="@{/department-roles}" th:classappend="${active == 'department-roles'} ? ' active' : ''" class="nav-link">
+                    <i class="bi bi-building me-2"></i>
+                    <span th:text="#{nav.departmentRoles}">Department Roles</span>
+                </a>
+            </li>
+            <li>
                 <a th:href="@{/target-systems}" th:classappend="${active == 'target-systems'} ? ' active' : ''" class="nav-link">
                     <i class="bi bi-hdd-network me-2"></i>
                     <span th:text="#{nav.targetSystems}">Target Systems</span>

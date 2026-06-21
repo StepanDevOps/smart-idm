@@ -14,6 +14,12 @@ import ru.mtkp.idm.model.RoleAssignment;
 import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.model.UserStatus;
 import ru.mtkp.idm.model.AssignType;
+import ru.mtkp.idm.model.Department;
+import ru.mtkp.idm.model.Role;
+import ru.mtkp.idm.model.RoleAssignment;
+import ru.mtkp.idm.model.User;
+import ru.mtkp.idm.model.UserStatus;
+import ru.mtkp.idm.repository.DepartmentRepository;
 import ru.mtkp.idm.repository.RoleAssignmentRepository;
 import ru.mtkp.idm.repository.RoleRepository;
 import ru.mtkp.idm.repository.UserRepository;
@@ -31,6 +37,7 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 	private final RoleAssignmentRepository roleAssignmentRepository;
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
+	private final DepartmentRepository departmentRepository;
 
 	/**
 	 * Назначает роль пользователю.
@@ -184,5 +191,48 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
 	public List<RoleAssignment> getAllAssignmentsForAllUsers() {
 		log.info("Получение всех назначений ролей");
 		return roleAssignmentRepository.findAllWithUserAndRole();
+	}
+
+	/**
+	 * Создает INDIRECT назначение через департамент.
+	 */
+	@Override
+	public RoleAssignment createIndirectAssignment(Long userId, Integer roleId, Integer departmentId, String reason) {
+		log.info("Создание INDIRECT назначения: userId={}, roleId={}, departmentId={}", userId, roleId, departmentId);
+
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
+
+		Role role = roleRepository.findById(roleId)
+				.orElseThrow(() -> new IllegalArgumentException("Роль не найдена: " + roleId));
+
+		Department department = departmentRepository.findById(departmentId)
+				.orElseThrow(() -> new IllegalArgumentException("Департамент не найден: " + departmentId));
+
+		RoleAssignment assignment = RoleAssignment.builder()
+				.user(user)
+				.role(role)
+				.department(department)
+				.assignmentType(ru.mtkp.idm.model.AssignType.INDIRECT)
+				.effectiveFrom(LocalDate.now())
+				.assignmentReason(reason != null ? reason : "INDIRECT через департамент")
+				.isActive(true)
+				.build();
+
+		RoleAssignment saved = roleAssignmentRepository.save(assignment);
+		log.info("INDIRECT назначение создано: assignmentId={}", saved.getId());
+		return saved;
+	}
+
+	/**
+	 * Получает назначения по userId и roleId.
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<RoleAssignment> getAssignmentsByUserAndRole(Long userId, Integer roleId) {
+		List<RoleAssignment> all = roleAssignmentRepository.findByUserId(userId);
+		return all.stream()
+				.filter(a -> a.getRole().getId().equals(roleId))
+				.toList();
 	}
 }
