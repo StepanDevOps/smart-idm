@@ -1,12 +1,16 @@
 package ru.mtkp.idm.validator;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import ru.mtkp.idm.model.Department;
 import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.model.UserStatus;
+import ru.mtkp.idm.repository.DepartmentRepository;
 
 /**
  * Валидатор для назначений ролей.
@@ -14,7 +18,10 @@ import ru.mtkp.idm.model.UserStatus;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RoleAssignmentValidator {
+
+    private final DepartmentRepository departmentRepository;
 
 	/**
 	 * Проверяет, что effectiveTo >= effectiveFrom.
@@ -52,19 +59,42 @@ public class RoleAssignmentValidator {
 	}
 
 	/**
+	 * Проверяет, что департамент существует.
+	 *
+	 * @param departmentId идентификатор департамента
+	 * @throws IllegalArgumentException если департамент не найден
+	 */
+	public void validateDepartmentExists(Integer departmentId) {
+		if (departmentId == null) {
+			return; // INDIRECT может быть null, это не ошибка
+		}
+		Department department = departmentRepository.findById(departmentId).orElse(null);
+		if (department == null) {
+			throw new IllegalArgumentException("Департамент не найден: " + departmentId);
+		}
+	}
+
+	/**
 	 * Проверяет все валидации для назначения.
 	 *
 	 * @param user пользователь
 	 * @param effectiveFrom дата начала
 	 * @param effectiveTo дата окончания
+	 * @param departmentId идентификатор департамента (для INDIRECT)
 	 * @throws IllegalArgumentException если валидация не пройдена
 	 */
-	public void validateAll(User user, LocalDate effectiveFrom, LocalDate effectiveTo) {
-		log.info("Выполнение валидации назначения: userId={}, effectiveFrom={}, effectiveTo={}",
-				user.getId(), effectiveFrom, effectiveTo);
+	public void validateAll(User user, LocalDate effectiveFrom, LocalDate effectiveTo, Integer departmentId) {
+		log.info("Выполнение валидации назначения: userId={}, effectiveFrom={}, effectiveTo={}, departmentId={}",
+				user.getId(), effectiveFrom, effectiveTo, departmentId);
 
 		validateUserNotTerminated(user);
 		validateDateRange(effectiveFrom, effectiveTo);
+		validateDepartmentExists(departmentId);
+
+		// Проверка: если есть departmentId, то это INDIRECT назначение
+		if (departmentId != null) {
+			log.info("INDIRECT назначение через департамент: {}", departmentId);
+		}
 
 		log.info("Валидация прошла успешно для пользователя: {}", user.getLogin());
 	}

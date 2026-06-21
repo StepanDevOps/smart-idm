@@ -11,14 +11,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ru.mtkp.idm.dto.RoleAssignmentDTO;
+import ru.mtkp.idm.model.Department;
 import ru.mtkp.idm.model.Role;
 import ru.mtkp.idm.model.RoleAssignment;
 import ru.mtkp.idm.model.TargetSystem;
 import ru.mtkp.idm.model.User;
+import ru.mtkp.idm.repository.DepartmentRepository;
 import ru.mtkp.idm.repository.RoleAssignmentRepository;
 import ru.mtkp.idm.repository.RoleRepository;
 import ru.mtkp.idm.repository.TargetSystemRepository;
 import ru.mtkp.idm.repository.UserRepository;
+import ru.mtkp.idm.service.DepartmentRoleService;
 import ru.mtkp.idm.service.RoleAssignmentService;
 
 /**
@@ -30,11 +33,13 @@ import ru.mtkp.idm.service.RoleAssignmentService;
 @RequiredArgsConstructor
 public class RoleAssignmentController {
 
-	private final RoleAssignmentService roleAssignmentService;
-	private final RoleAssignmentRepository roleAssignmentRepository;
-	private final UserRepository userRepository;
-	private final RoleRepository roleRepository;
-	private final TargetSystemRepository targetSystemRepository;
+    private final RoleAssignmentService roleAssignmentService;
+    private final RoleAssignmentRepository roleAssignmentRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final TargetSystemRepository targetSystemRepository;
+    private final DepartmentRepository departmentRepository;
+    private final DepartmentRoleService departmentRoleService;
 
 	/**
 	 * Список всех назначений ролей.
@@ -76,12 +81,14 @@ public class RoleAssignmentController {
 
 		List<User> users = userRepository.findAll();
 		List<TargetSystem> systems = targetSystemRepository.findAll();
+		List<Department> departments = departmentRepository.findAll();
 
 		// По умолчанию показываем глобальные роли (system = null)
 		List<Role> roles = roleRepository.findGlobalAndSystemRoles(null);
 
 		model.addAttribute("users", users);
 		model.addAttribute("systems", systems);
+		model.addAttribute("departments", departments);
 		model.addAttribute("roles", roles);
 		model.addAttribute("assignment", new RoleAssignmentDTO());
 		model.addAttribute("pageTitle", "Создать назначение роли");
@@ -99,19 +106,30 @@ public class RoleAssignmentController {
 	}
 
 	/**
+	 * AJAX: получить роли для выбранного департамента (с учётом детей).
+	 */
+	@GetMapping("/roles-by-department/{departmentId}")
+	@ResponseBody
+	public List<Integer> getRolesByDepartment(@PathVariable Integer departmentId) {
+		log.info("Получение ролей для департамента: {}", departmentId);
+		return departmentRoleService.getAllRolesForDepartmentWithChildren(departmentId);
+	}
+
+	/**
 	 * Создание назначения.
 	 */
 	@PostMapping
 	public String createAssignment(
 			@RequestParam Long userId,
 			@RequestParam Integer roleId,
+			@RequestParam(required = false) Integer departmentId,
 			@RequestParam(required = false) String reason,
 			@RequestParam(required = false) String effectiveFrom,
 			@RequestParam(required = false) String effectiveTo,
 			RedirectAttributes redirectAttributes) {
 
-		log.info("Создание назначения: userId={}, roleId={}, reason={}, effectiveFrom={}, effectiveTo={}",
-				userId, roleId, reason, effectiveFrom, effectiveTo);
+		log.info("Создание назначения: userId={}, roleId={}, departmentId={}, reason={}, effectiveFrom={}, effectiveTo={}",
+				userId, roleId, departmentId, reason, effectiveFrom, effectiveTo);
 
 		LocalDate fromDate = null;
 		if (effectiveFrom != null && !effectiveFrom.isEmpty()) {
@@ -126,6 +144,14 @@ public class RoleAssignmentController {
 		try {
 			RoleAssignment assignment = roleAssignmentService.assignRoleToUser(
 					userId, roleId, reason, fromDate, toDate);
+
+			// Если указан departmentId — это INDIRECT назначение
+			if (departmentId != null) {
+				assignment.setDepartment(departmentRepository.findById(departmentId)
+						.orElseThrow(() -> new IllegalArgumentException("Департамент не найден: " + departmentId)));
+				assignment.setAssignmentType(ru.mtkp.idm.model.AssignType.INDIRECT);
+				roleAssignmentRepository.save(assignment);
+			}
 
 			redirectAttributes.addFlashAttribute("successMessage",
 					"Роль успешно назначена пользователю (assignmentId=" + assignment.getId() + ")");

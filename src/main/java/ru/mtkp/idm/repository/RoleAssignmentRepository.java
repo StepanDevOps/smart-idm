@@ -73,4 +73,32 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignment, 
 	@Query("SELECT DISTINCT ra FROM RoleAssignment ra JOIN FETCH ra.user JOIN FETCH ra.role " +
 			"ORDER BY ra.createdAt DESC")
 	List<RoleAssignment> findAllWithUserAndRole();
+
+	/**
+	 * Находит назначения по департаменту (включая INDIRECT).
+	 *
+	 * @param departmentId идентификатор департамента
+	 * @return список назначений
+	 */
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra " +
+			"JOIN FETCH ra.user JOIN FETCH ra.role " +
+			"LEFT JOIN FETCH ra.department " +
+			"WHERE ra.department.id = :departmentId " +
+			"AND (ra.assignmentType = 'INDIRECT' OR ra.isActive = true) " +
+			"ORDER BY ra.createdAt DESC")
+	List<RoleAssignment> findByDepartmentIdAndActive(@Param("departmentId") Integer departmentId);
+
+	/**
+	 * Находит INDIRECT назначения по департаменту.
+	 *
+	 * @param departmentId идентификатор департамента
+	 * @return список INDIRECT назначений
+	 */
+	@Query("SELECT DISTINCT ra FROM RoleAssignment ra " +
+			"JOIN FETCH ra.user JOIN FETCH ra.role " +
+			"LEFT JOIN FETCH ra.department " +
+			"WHERE ra.department.id = :departmentId " +
+			"AND ra.assignmentType = 'INDIRECT' " +
+			"ORDER BY ra.createdAt DESC")
+	List<RoleAssignment> findIndirectAssignmentsByDepartment(@Param("departmentId") Integer departmentId);
 }

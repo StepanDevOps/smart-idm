@@ -10,8 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
 import java.util.List;
-// ...existing code...
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,6 +48,10 @@ public class Department {
 
     @OneToMany(mappedBy = "department")
     private List<User> users;
+
+    @OneToMany(mappedBy = "parentUnit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Department> children = new java.util.ArrayList<>();
 }
 
 
