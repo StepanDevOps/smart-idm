@@ -1,24 +1,38 @@
 package ru.mtkp.idm.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import ru.mtkp.idm.model.Account;
 import ru.mtkp.idm.model.RoleAssignment;
+import ru.mtkp.idm.model.SecurityLog;
+import ru.mtkp.idm.model.User;
 import ru.mtkp.idm.model.UserStatus;
 import ru.mtkp.idm.repository.AccountRepository;
 import ru.mtkp.idm.repository.RequestRepository;
 import ru.mtkp.idm.repository.RoleAssignmentRepository;
+import ru.mtkp.idm.repository.SecurityLogRepository;
 import ru.mtkp.idm.repository.UserRepository;
 
 /**
  * Контроллер для административных страниц: Users, Requests, Audit, Profile.
  */
+@Slf4j
 @Controller
 public class AdminController {
 
@@ -26,13 +40,16 @@ public class AdminController {
     private final RequestRepository requestRepository;
     private final AccountRepository accountRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
+    private final SecurityLogRepository securityLogRepository;
 
     public AdminController(UserRepository userRepository, RequestRepository requestRepository,
-                          AccountRepository accountRepository, RoleAssignmentRepository roleAssignmentRepository) {
+                          AccountRepository accountRepository, RoleAssignmentRepository roleAssignmentRepository,
+                          SecurityLogRepository securityLogRepository) {
         this.userRepository = userRepository;
         this.requestRepository = requestRepository;
         this.accountRepository = accountRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
+        this.securityLogRepository = securityLogRepository;
     }
 
     /**
@@ -56,12 +73,68 @@ public class AdminController {
     }
 
     /**
-     * Журнал аудита — список событий (демо: используем заявки как записи).
+     * Журнал аудита — список событий SecurityLog с фильтрами и пагинацией.
      */
     @GetMapping("/audit")
-    public String audit(Model model) {
-        model.addAttribute("events", requestRepository.findAll());
+    public String audit(
+            @RequestParam(required = false) String eventType,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Model model) {
+
+        log.info("Получение журнала аудита: eventType={}, userId={}, fromDate={}, toDate={}, page={}, size={}",
+                eventType, userId, fromDate, toDate, page, size);
+
+        // Парсим даты
+        LocalDateTime fromDateTime = null;
+        LocalDateTime toDateTime = null;
+
+        if (fromDate != null && !fromDate.isEmpty()) {
+            try {
+                fromDateTime = LocalDate.parse(fromDate).atStartOfDay();
+            } catch (DateTimeParseException e) {
+                model.addAttribute("errorMessage", "Неверный формат даты начала");
+            }
+        }
+
+        if (toDate != null && !toDate.isEmpty()) {
+            try {
+                toDateTime = LocalDate.parse(toDate).atTime(LocalTime.MAX);
+            } catch (DateTimeParseException e) {
+                model.addAttribute("errorMessage", "Неверный формат даты окончания");
+            }
+        }
+
+        // Создаём пагинацию
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "eventTime"));
+
+        // Получаем логи с фильтрами
+        Page<SecurityLog> logPage;
+        if (eventType == null && userId == null && fromDateTime == null && toDateTime == null) {
+            // Без фильтров
+            logPage = securityLogRepository.findAllByOrderByEventTimeDesc(pageable);
+        } else {
+            // С фильтрами
+            logPage = securityLogRepository.findByFilters(eventType, userId, fromDateTime, toDateTime, pageable);
+        }
+
+        // Получаем списки для фильтров
+        List<String> eventTypes = securityLogRepository.findDistinctEventTypes();
+        List<User> users = userRepository.findAll();
+
+        model.addAttribute("logs", logPage);
+        model.addAttribute("eventTypes", eventTypes);
+        model.addAttribute("users", users);
+        model.addAttribute("selectedEventType", eventType);
+        model.addAttribute("selectedUserId", userId);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
         model.addAttribute("active", "audit");
+        model.addAttribute("pageTitle", "Журнал аудита");
+
         return "audit";
     }
 
