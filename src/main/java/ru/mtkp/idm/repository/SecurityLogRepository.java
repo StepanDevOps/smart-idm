@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import ru.mtkp.idm.model.SecurityLog;
@@ -61,16 +60,11 @@ public interface SecurityLogRepository extends JpaRepository<SecurityLog, Intege
 	 * @param pageable параметры пагинации
 	 * @return страница логов
 	 */
-	@Query("SELECT s FROM SecurityLog s WHERE " +
-			"(:eventType IS NULL OR s.eventType = :eventType) AND " +
-			"(:userId IS NULL OR s.user.id = :userId) AND " +
-			"(:fromDate IS NULL OR s.eventTime >= :fromDate) AND " +
-			"(:toDate IS NULL OR s.eventTime <= :toDate)")
-	Page<SecurityLog> findByFilters(
-			@Param("eventType") String eventType,
-			@Param("userId") Long userId,
-			@Param("fromDate") LocalDateTime fromDate,
-			@Param("toDate") LocalDateTime toDate,
+	Page<SecurityLog> findByEventTypeAndUserIdAndEventTimeBetween(
+			String eventType,
+			Long userId,
+			LocalDateTime fromDate,
+			LocalDateTime toDate,
 			Pageable pageable);
 
 	/**

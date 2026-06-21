@@ -117,8 +117,12 @@ public class AdminController {
             // Без фильтров
             logPage = securityLogRepository.findAllByOrderByEventTimeDesc(pageable);
         } else {
-            // С фильтрами
-            logPage = securityLogRepository.findByFilters(eventType, userId, fromDateTime, toDateTime, pageable);
+            // С фильтрами - используем дефолтные значения для null дат
+            LocalDateTime filterFrom = fromDateTime != null ? fromDateTime : LocalDateTime.of(1970, 1, 1, 0, 0);
+            LocalDateTime filterTo = toDateTime != null ? toDateTime : LocalDateTime.of(2099, 12, 31, 23, 59);
+
+            logPage = securityLogRepository.findByEventTypeAndUserIdAndEventTimeBetween(
+                    eventType, userId, filterFrom, filterTo, pageable);
         }
 
         // Получаем списки для фильтров
