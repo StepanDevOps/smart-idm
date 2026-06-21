@@ -234,16 +234,16 @@ List<Map<String, Object>> findAllWithPath();
 
 ### 4.1. Аудит и логирование
 **Задачи:**
-- [ ] Создать сущность `AuditLog`
-- [ ] Добавить логирование всех изменений в `RoleAssignment`
-- [ ] Добавить `SecurityLog` для действий администратора
+- [x] Создать сущность `AuditLog`
+- [x] Добавить логирование всех изменений в `RoleAssignment`
+- [x] Добавить `SecurityLog` для действий администратора
 
 **Файлы:**
 - `src/main/java/ru/mtkp/idm/model/AuditLog.java`
 - `src/main/java/ru/mtkp/idm/repository/AuditLogRepository.java`
 - `src/main/java/ru/mtkp/idm/service/AuditService.java`
 
-**Статус:** ⬜ Не выполнено
+**Статус:** ✅ Выполнено
 
 ---
 
