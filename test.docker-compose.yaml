@@ -45,11 +45,13 @@ services:
     restart: unless-stopped
     volumes:
       - ./data/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana
     networks:
       - smart-idm-network
 
 volumes:
   pgdata:
+  grafana_data:
 
 networks:
   smart-idm-network:
