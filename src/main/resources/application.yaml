@@ -21,6 +21,12 @@ spring:
     basename: messages
     encoding: UTF-8
     fallback-to-system-locale: true
+  web:
+    error:
+      whitelabel:
+        enabled: false
+      include-message: always
+      include-stacktrace: on_param
 
 server:
   port: 8080

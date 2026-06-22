@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ошибка 503 - База данных недоступна</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            color: #f39c12;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-title {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .error-type {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #f39c12;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+            transform: translateY(-2px);
+        }
+
+        .details {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            font-size: 13px;
+            color: #95a5a6;
+        }
+
+        .details code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #fff3cd;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #f39c12;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="icon">🗄️</div>
+        <div class="error-code">503</div>
+        <div class="error-title">База данных недоступна</div>
+        
+        <div class="status-indicator">
+            Инцидент зафиксирован
+        </div>
+        
+        <div class="error-type" th:text="${errorType ?: 'Ошибка подключения к БД'}">Ошибка подключения к БД</div>
+        
+        <div class="error-message" th:text="${errorMessage ?: 'В данный момент база данных недоступна. Администратор уже уведомлен о проблеме. Попробуйте повторить запрос через несколько минут.'}">
+            В данный момент база данных недоступна. Администратор уже уведомлен о проблеме. Попробуйте повторить запрос через несколько минут.
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                🏠 На главную
+            </a>
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                ⬅️ Назад
+            </a>
+            <a href="javascript:location.reload()" class="btn btn-secondary">
+                🔄 Попробовать снова
+            </a>
+        </div>
+
+        <div class="details">
+            <p>Время ошибки: <strong th:text="${#temporals.format(errorTimestamp, 'yyyy-MM-dd HH:mm:ss')}">Неизвестно</strong></p>
+            <p>URL запроса: <code th:text="${requestURI ?: '/'}">/</code></p>
+            <p th:if="${traceId}">Trace ID: <code th:text="${traceId}">-</code></p>
+            <p style="margin-top: 10px;">📊 Мониторинг: <a href="/actuator/prometheus" target="_blank" style="color: #3498db;">Grafana Dashboard</a></p>
+        </div>
+    </div>
+</body>
+</html>

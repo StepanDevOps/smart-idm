@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ошибка 500 - Внутренняя ошибка сервера</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            color: #e74c3c;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-title {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fdf2f2;
+            border-left: 4px solid #e74c3c;
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        .error-type {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+            transform: translateY(-2px);
+        }
+
+        .details {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            font-size: 13px;
+            color: #95a5a6;
+        }
+
+        .details code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="icon">🔥</div>
+        <div class="error-code">500</div>
+        <div class="error-title">Внутренняя ошибка сервера</div>
+        
+        <div class="error-type" th:text="${errorType ?: 'Ошибка системы'}">Ошибка системы</div>
+        
+        <div class="error-message" th:text="${errorMessage ?: 'Произошла непредвиденная ошибка. Попробуйте обновить страницу или обратиться к администратору.'}">
+            Произошла непредвиденная ошибка. Попробуйте обновить страницу или обратиться к администратору.
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                🏠 На главную
+            </a>
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                ⬅️ Назад
+            </a>
+            <a href="javascript:location.reload()" class="btn btn-secondary">
+                🔄 Обновить
+            </a>
+        </div>
+
+        <div class="details">
+            <p>Время ошибки: <strong th:text="${errorTimestamp ?: 'Неизвестно'}">Неизвестно</strong></p>
+            <p>URL запроса: <code th:text="${requestURI ?: '/'}">/</code></p>
+        </div>
+    </div>
+</body>
+</html>
